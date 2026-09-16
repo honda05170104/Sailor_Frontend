@@ -1,9 +1,9 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import BottomNav from '../components/BottomNav'
-import { Dashboard, Scroll } from '../components/Dashboard'
+import { Card, Dashboard, Scroll } from '../components/Dashboard'
 import HomeSkeleton from '../components/HomeSkeleton'
 import StoreEventsCarousel from '../components/StoreEventsCarousel'
 import UserHeader from '../components/UserHeader'
@@ -18,12 +18,24 @@ export default function HomePage() {
     (state) => state.userReducer.getUser,
   )
   const user = data?.user
+  const [feedInfoOpen, setFeedInfoOpen] = useState(false)
 
   useEffect(() => {
     if (!user && !loading && !error) {
       void dispatch(getUser())
     }
   }, [dispatch, error, loading, user])
+
+  useEffect(() => {
+    if (!feedInfoOpen) return
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setFeedInfoOpen(false)
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [feedInfoOpen])
 
   if (loading || (!user && !error)) {
     return <HomeSkeleton />
@@ -44,7 +56,12 @@ export default function HomePage() {
         />
 
         <Stats aria-label="會員資料">
-          <StatCard>
+          <StatCard
+            as="button"
+            type="button"
+            onClick={() => setFeedInfoOpen(true)}
+            aria-label="餌料寄杯說明"
+          >
             <StatValue>{prepaidFeed}</StatValue>
             <StatLabel>餌料寄杯</StatLabel>
           </StatCard>
@@ -165,6 +182,32 @@ export default function HomePage() {
       </Scroll>
 
       <BottomNav />
+
+      {feedInfoOpen ? (
+        <>
+          <ModalOverlay
+            type="button"
+            aria-label="關閉說明"
+            onClick={() => setFeedInfoOpen(false)}
+          />
+          <ModalSheet
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="feed-info-title"
+          >
+            <ModalTitle id="feed-info-title">餌料寄杯</ModalTitle>
+            <ModalBody>
+              餌料寄杯是預先存放在門市的飼料／餌料份數。到店時可直接取用，結帳會依寄杯數量扣除。
+            </ModalBody>
+            <ModalBody>
+              實際可用數量以門市系統為準；若有疑問，歡迎向店員確認。
+            </ModalBody>
+            <ModalClose type="button" onClick={() => setFeedInfoOpen(false)}>
+              知道了
+            </ModalClose>
+          </ModalSheet>
+        </>
+      ) : null}
     </Dashboard>
   )
 }
@@ -176,7 +219,16 @@ const Stats = styled.section`
   margin-top: 0.85rem;
 `
 
-const StatCard = styled.article`
+const StatValue = styled.p<{ $small?: boolean }>`
+  margin: 0;
+  color: var(--color-white);
+  font-size: ${({ $small }) => ($small ? '1.15rem' : '1.55rem')};
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+`
+
+const StatCard = styled(Card)`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -185,23 +237,12 @@ const StatCard = styled.article`
   min-height: 6.5rem;
   padding: 0.85rem 0.5rem;
   text-align: center;
-  background: var(--dash-card);
-  border-radius: 1.35rem;
 
   &[type='button'] {
-    border: 0;
     color: inherit;
     font: inherit;
     cursor: pointer;
   }
-`
-
-const StatValue = styled.p<{ $small?: boolean }>`
-  margin: 0;
-  font-size: ${({ $small }) => ($small ? '1.15rem' : '1.55rem')};
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.2;
 `
 
 const StatLabel = styled.p`
@@ -210,11 +251,9 @@ const StatLabel = styled.p`
   font-size: 0.82rem;
 `
 
-const FeatureCard = styled.section`
+const FeatureCard = styled(Card)`
   margin-top: 0.85rem;
   padding: 1rem 1.1rem 1.05rem;
-  background: var(--dash-card);
-  border-radius: 1.35rem;
 `
 
 const FeatureTitle = styled.p`
@@ -226,7 +265,7 @@ const FeatureTitle = styled.p`
 const FeatureGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.45rem;
+  gap: 0.55rem;
   margin-top: 0.85rem;
 `
 
@@ -234,29 +273,87 @@ const FeatureLink = styled.button`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.2rem 0.15rem 0.1rem;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 4.4rem;
+  padding: 0.4rem 0.2rem;
   border: 0;
-  background: transparent;
-  color: inherit;
+  border-radius: 1rem;
+  background: #171a24;
+  color: #aeb4c2;
   font: inherit;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
   text-align: center;
   cursor: pointer;
+  transition: background 160ms ease;
+
+  &:hover {
+    background: #1d2130;
+  }
 `
 
 const FeatureIcon = styled.span`
   display: grid;
   place-items: center;
-  width: 2.65rem;
-  height: 2.65rem;
-  border-radius: 0.95rem;
-  background: rgba(255, 255, 255, 0.08);
-  color: #d1d1d6;
+  color: var(--color-primary);
 
   svg {
-    width: 1.2rem;
-    height: 1.2rem;
+    width: 2.1rem;
+    height: 2.1rem;
   }
+`
+
+const ModalOverlay = styled.button`
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  border: 0;
+  background: rgba(0, 0, 0, 0.55);
+`
+
+const ModalSheet = styled.div`
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 21;
+  width: min(calc(100% - 2rem), 22rem);
+  padding: 1.25rem 1.15rem 1.1rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 1.35rem;
+  background: rgba(22, 24, 32, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+  transform: translate(-50%, -50%);
+`
+
+const ModalTitle = styled.h2`
+  margin: 0 0 0.85rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+`
+
+const ModalBody = styled.p`
+  margin: 0 0 0.7rem;
+  color: var(--dash-muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+
+  &:last-of-type {
+    margin-bottom: 1.1rem;
+  }
+`
+
+const ModalClose = styled.button`
+  width: 100%;
+  min-height: 2.75rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
 `

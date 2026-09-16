@@ -5,7 +5,6 @@ import BottomNav from '../components/BottomNav'
 import {
   Card,
   Dashboard,
-  Eyebrow,
   Scroll,
   Skeleton,
 } from '../components/Dashboard'
@@ -85,7 +84,6 @@ function CouponsSkeleton() {
     <Dashboard>
       <Scroll aria-busy="true" aria-label="載入中">
         <PageHeader>
-          <Skeleton $variant="eyebrow" />
           <Skeleton $variant="title" />
         </PageHeader>
         <ItemList>
@@ -102,7 +100,6 @@ export default function CouponsPage() {
   const dispatch = useAppDispatch()
   const { data, loading } = useAppSelector((state) => state.userReducer.getCoupons)
   const coupons = useMemo(() => sortCoupons(data?.coupons ?? []), [data?.coupons])
-  const availableCount = data?.couponCount ?? coupons.filter((item) => item.status === 'available').length
 
   useEffect(() => {
     void dispatch(getCoupons())
@@ -116,13 +113,7 @@ export default function CouponsPage() {
     <Dashboard>
       <Scroll>
         <PageHeader>
-          <Eyebrow>會員優惠</Eyebrow>
           <PageTitle>優惠券</PageTitle>
-          <PageCount>
-            {coupons.length
-              ? `可使用 ${availableCount} 張`
-              : '尚無紀錄'}
-          </PageCount>
         </PageHeader>
 
         {coupons.length ? (
@@ -151,12 +142,6 @@ const PageTitle = styled.h1`
   font-weight: 700;
   letter-spacing: -0.04em;
   line-height: 1.15;
-`
-
-const PageCount = styled.p`
-  margin: 0.35rem 0 0;
-  color: var(--dash-muted);
-  font-size: 0.82rem;
 `
 
 const ItemList = styled.div`

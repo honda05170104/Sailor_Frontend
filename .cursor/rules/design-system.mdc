@@ -1,0 +1,52 @@
+---
+description: Sailor frontend design system — colors, glass, typography
+globs: src/**/*.{ts,tsx,css}
+alwaysApply: false
+---
+
+# Sailor Design System
+
+Source of truth: `src/styles/designSystem.ts`  
+CSS variables are mirrored in `src/components/GlobalStyle.tsx`.
+
+## Colors
+
+### Neutrals
+- `--color-black` / `--color-black-deep` — page background
+- `--color-white` — primary text
+- `--color-muted` — secondary text
+- `--color-glass` / `--color-glass-strong` / `--color-glass-border` — glass surfaces
+
+### Brand (use these instead of inventing new hues)
+- **主色 `--color-primary` `#2f6bff`** — 鮮豔藍；**克制使用**，目前主要給 footer 中間個人中心按鈕
+- 其餘 UI 預設白／玻璃中性色，不要到處鋪主色
+- `--color-accent` `#ff8c42` — 輔助，少用
+- `--color-secondary` `#946eff` — 輔助，少用
+- `--color-success` `#6cc762` — 成功 / LINE 相關
+- `--color-danger` `#ff453a` — 錯誤、危險操作
+- `--color-warning` `#f5c542` — 警告
+
+Soft variants: `--color-primary-soft`, `--color-accent-soft`, `--color-secondary-soft`.
+
+Do not flood the UI with primary. Keep most text/icons white; reserve primary for key CTAs.
+
+## Usage
+
+Prefer CSS variables in styled-components:
+
+```tsx
+color: var(--color-primary);
+background: var(--color-accent-soft);
+border: 1px solid var(--color-glass-border);
+```
+
+Or import tokens:
+
+```ts
+import { colors } from '../styles/designSystem'
+```
+
+## Style rules
+- Dark glass UI: translucent cards + `backdrop-filter`, not flat solid gray cards
+- Keep layout as-is when only changing style
+- Do not introduce random purples/pinks outside the tokens above

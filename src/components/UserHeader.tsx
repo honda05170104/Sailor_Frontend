@@ -237,9 +237,11 @@ const BarcodeBtn = styled.button`
   gap: 0.3rem;
   flex: 0 0 auto;
   padding: 0.32rem 0.62rem;
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   color: #ffffff;
   font: inherit;
   font-size: 0.75rem;

@@ -5,7 +5,6 @@ import BottomNav from '../components/BottomNav'
 import {
   Card,
   Dashboard,
-  Eyebrow,
   PlaceholderText,
   Scroll,
   Skeleton,
@@ -89,7 +88,6 @@ function TransactionsSkeleton() {
     <Dashboard>
       <Scroll aria-busy="true" aria-label="載入中">
         <TxHeader>
-          <Skeleton $variant="eyebrow" />
           <Skeleton $variant="title" />
         </TxHeader>
         <TxList>
@@ -120,11 +118,7 @@ export default function TransactionsPage() {
     <Dashboard>
       <Scroll>
         <TxHeader>
-          <Eyebrow>消費紀錄</Eyebrow>
           <TxTitle>交易紀錄</TxTitle>
-          <TxCount>
-            {transactions.length ? `共 ${transactions.length} 筆` : '尚無紀錄'}
-          </TxCount>
         </TxHeader>
 
         {transactions.length ? (
@@ -153,12 +147,6 @@ const TxTitle = styled.h1`
   font-weight: 700;
   letter-spacing: -0.04em;
   line-height: 1.15;
-`
-
-const TxCount = styled.p`
-  margin: 0.35rem 0 0;
-  color: var(--dash-muted);
-  font-size: 0.82rem;
 `
 
 const TxList = styled.div`

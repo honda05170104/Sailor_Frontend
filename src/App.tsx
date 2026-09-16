@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import RequireAuth from './components/RequireAuth'
 import RequireProfile from './components/RequireProfile'
+import ScrollToTop from './components/ScrollToTop'
 import CompleteProfilePage from './pages/CompleteProfilePage'
 import ComingSoonPage from './pages/ComingSoonPage'
 import CouponsPage from './pages/CouponsPage'
@@ -24,6 +25,7 @@ function LoginRoute() {
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/login" element={<LoginRoute />} />
 
@@ -37,11 +39,11 @@ export default function App() {
             <Route path="/vip" element={<VipPage />} />
             <Route
               path="/order-mice"
-              element={<ComingSoonPage eyebrow="門市服務" title="訂購老鼠" />}
+              element={<ComingSoonPage title="訂購老鼠" />}
             />
             <Route
               path="/boarding"
-              element={<ComingSoonPage eyebrow="門市服務" title="寄宿申請" />}
+              element={<ComingSoonPage title="寄宿申請" />}
             />
             <Route path="/store" element={<StoreInfoPage />} />
           </Route>

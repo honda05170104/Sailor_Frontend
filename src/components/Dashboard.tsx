@@ -1,6 +1,6 @@
 import styled, { css, keyframes } from 'styled-components'
 
-import { VIP_PAGE_BG, type VipThemeKey } from '../utils/vipTheme'
+import { type VipThemeKey } from '../utils/vipTheme'
 
 const shimmer = keyframes`
   from {
@@ -11,15 +11,48 @@ const shimmer = keyframes`
   }
 `
 
+const VIP_GLOW: Record<VipThemeKey, string> = {
+  bronze: 'rgba(180, 110, 50, 0.28)',
+  silver: 'rgba(140, 160, 190, 0.28)',
+  gold: 'rgba(210, 170, 60, 0.28)',
+  black: 'rgba(120, 120, 140, 0.22)',
+}
+
 export const Dashboard = styled.main<{ $vip?: VipThemeKey }>`
-  --dash-bg: #000000;
-  --dash-card: #1c1c1e;
-  --dash-text: #ffffff;
-  --dash-muted: #8e8e93;
+  --dash-bg: var(--color-black);
+  --dash-card: var(--color-glass);
+  --dash-card-border: var(--color-glass-border);
+  --dash-glass: var(--color-glass-strong);
+  --dash-text: var(--color-white);
+  --dash-muted: var(--color-muted);
+  --dash-blur: blur(22px);
+  --dash-primary: var(--color-primary);
+  --dash-accent: var(--color-accent);
+  --dash-secondary: var(--color-secondary);
+  position: relative;
+  isolation: isolate;
   min-height: 100svh;
-  background: ${({ $vip }) => ($vip ? VIP_PAGE_BG[$vip] : 'var(--dash-bg)')};
+  overflow: hidden;
+  background: var(--color-black);
   color: var(--dash-text);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+  font-family: var(--font-body), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        ellipse 90% 55% at 50% -5%,
+        ${({ $vip }) => ($vip ? VIP_GLOW[$vip] : 'rgba(120, 120, 140, 0.22)')} 0%,
+        transparent 58%
+      ),
+      radial-gradient(ellipse 70% 45% at 50% 62%, rgba(55, 55, 70, 0.45), transparent 70%),
+      radial-gradient(ellipse 50% 35% at 80% 20%, rgba(80, 80, 110, 0.18), transparent 55%),
+      linear-gradient(180deg, #0a0a0c 0%, #050505 45%, #000000 100%);
+  }
 `
 
 export const DashboardLoading = styled(Dashboard)`
@@ -40,7 +73,11 @@ export const Scroll = styled.div`
 
 export const Card = styled.section`
   background: var(--dash-card);
-  border-radius: 1.35rem;
+  border: 1px solid var(--dash-card-border);
+  border-radius: 1.5rem;
+  backdrop-filter: var(--dash-blur);
+  -webkit-backdrop-filter: var(--dash-blur);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
 `
 
 export const Eyebrow = styled.p`
@@ -55,12 +92,13 @@ export const PlaceholderText = styled.span`
 `
 
 export const Skeleton = styled.span<{
-  $variant?: 'avatar' | 'eyebrow' | 'title' | 'tag' | 'stat' | 'line' | 'wide'
+  $variant?: 'avatar' | 'eyebrow' | 'title' | 'tag' | 'stat' | 'line' | 'wide' | 'hero'
 }>`
   display: block;
   overflow: hidden;
   border-radius: 0.75rem;
-  background: #2c2c2e;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   position: relative;
 
   &::after {
@@ -106,7 +144,14 @@ export const Skeleton = styled.span<{
       case 'stat':
         return css`
           min-height: 6.5rem;
-          border-radius: 1.35rem;
+          border-radius: 1.5rem;
+        `
+      case 'hero':
+        return css`
+          width: 11rem;
+          height: 2.8rem;
+          margin: 0.4rem auto 0;
+          border-radius: 1rem;
         `
       case 'line':
         return css`
@@ -117,7 +162,7 @@ export const Skeleton = styled.span<{
         return css`
           min-height: 5.5rem;
           margin-top: 0.85rem;
-          border-radius: 1.35rem;
+          border-radius: 1.5rem;
         `
       default:
         return css`

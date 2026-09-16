@@ -1,20 +1,13 @@
 import styled from 'styled-components'
 
 import BottomNav from '../components/BottomNav'
-import { Card, Dashboard, Eyebrow, Scroll } from '../components/Dashboard'
+import { Card, Dashboard, Scroll } from '../components/Dashboard'
 
-export default function ComingSoonPage({
-  eyebrow,
-  title,
-}: {
-  eyebrow: string
-  title: string
-}) {
+export default function ComingSoonPage({ title }: { title: string }) {
   return (
     <Dashboard>
       <Scroll>
         <PageHeader>
-          <Eyebrow>{eyebrow}</Eyebrow>
           <PageTitle>{title}</PageTitle>
         </PageHeader>
         <EmptyCard>即將開放</EmptyCard>
