@@ -92,6 +92,16 @@ export default function BottomNav() {
           <MenuItem
             type="button"
             role="menuitem"
+            onClick={() => {
+              setMenuOpen(false)
+              navigate('/store')
+            }}
+          >
+            門市資訊
+          </MenuItem>
+          <MenuItem
+            type="button"
+            role="menuitem"
             $danger
             disabled={loggingOut}
             onClick={() => void dispatch(logout())}

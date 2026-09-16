@@ -101,5 +101,8 @@ export default defineConfig(({ mode }) => {
       react(),
       lineTokenPlugin(env.VITE_LINE_CHANNEL_ID?.trim() || '', env.LINE_CHANNEL_SECRET?.trim() || ''),
     ],
+    preview: {
+      allowedHosts: true,
+    },
   }
 })

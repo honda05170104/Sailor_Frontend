@@ -94,6 +94,21 @@ export default function HomePage() {
               </FeatureIcon>
               寄宿申請
             </FeatureLink>
+            <FeatureLink type="button" onClick={() => navigate('/store')}>
+              <FeatureIcon aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M4.5 10.2 6 5.5h12l1.5 4.7M5 10.5V20h14v-9.5M9 20v-5h6v5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </FeatureIcon>
+              門市資訊
+            </FeatureLink>
             <FeatureLink type="button" onClick={() => navigate('/profile')}>
               <FeatureIcon aria-hidden="true">
                 <svg viewBox="0 0 24 24">

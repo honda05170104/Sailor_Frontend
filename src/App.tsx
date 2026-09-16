@@ -8,6 +8,7 @@ import CouponsPage from './pages/CouponsPage'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import ProfilePage from './pages/ProfilePage'
+import StoreInfoPage from './pages/StoreInfoPage'
 import TransactionsPage from './pages/TransactionsPage'
 import VipPage from './pages/VipPage'
 import { getAuthToken } from './utils/auth'
@@ -42,6 +43,7 @@ export default function App() {
               path="/boarding"
               element={<ComingSoonPage eyebrow="門市服務" title="寄宿申請" />}
             />
+            <Route path="/store" element={<StoreInfoPage />} />
           </Route>
         </Route>
 
