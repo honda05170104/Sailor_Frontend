@@ -78,13 +78,6 @@ export default function VipPage() {
           onProfileClick={() => navigate('/profile')}
         />
 
-        <VipRulesCard>
-          <VipRulesImage
-            src="/vip-rules.jpg"
-            alt="VIP 規則：一般會員、頂級白金卡、尊爵黑卡權益對照"
-          />
-        </VipRulesCard>
-
         {vips.length ? (
           <InfoCard>
             <CardTitle>會員權益</CardTitle>
@@ -100,6 +93,9 @@ export default function VipPage() {
                 </VipItem>
               ))}
             </VipList>
+            <Disclaimer>
+              *水手保有修改誠品會員各項權益之權利，最新內容請以水手官方網站或門市相關公告為準。
+            </Disclaimer>
           </InfoCard>
         ) : null}
       </Scroll>
@@ -108,18 +104,6 @@ export default function VipPage() {
     </Dashboard>
   )
 }
-
-const VipRulesCard = styled(Card)`
-  margin-top: 0.85rem;
-  overflow: hidden;
-  padding: 0;
-`
-
-const VipRulesImage = styled.img`
-  display: block;
-  width: 100%;
-  height: auto;
-`
 
 const InfoCard = styled(Card)`
   margin-top: 0.85rem;
@@ -161,4 +145,11 @@ const VipItemDesc = styled.p`
   margin: 0.4rem 0 0;
   font-size: 0.88rem;
   line-height: 1.45;
+`
+
+const Disclaimer = styled.p`
+  margin: 1rem 0 0;
+  color: var(--dash-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
 `

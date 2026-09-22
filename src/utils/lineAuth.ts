@@ -1,3 +1,5 @@
+import { requestJson } from './api'
+
 const CHANNEL_ID = import.meta.env.VITE_LINE_CHANNEL_ID?.trim() || ''
 const STATE_KEY = 'line_oauth_state'
 const VERIFIER_KEY = 'line_oauth_verifier'
@@ -118,20 +120,25 @@ export function takeLineLoginCallback(params: URLSearchParams): LineLoginPayload
 }
 
 export async function exchangeLineAccessToken(payload: LineLoginPayload) {
-  const response = await fetch('/__line/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  })
-  const body = (await response.json().catch(() => null)) as
-    | { accessToken?: string; message?: string }
-    | null
+  const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000').replace(
+    /\/$/,
+    '',
+  )
+  const data = await requestJson<{ accessToken?: string }>(
+    `${API_BASE_URL}/api/v1/user/lineToken`,
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      errorMessage: '無法取得 LINE access token',
+    },
+  )
 
-  if (!response.ok || !body?.accessToken) {
-    throw new Error(body?.message || '無法取得 LINE access token')
+  const accessToken = data?.accessToken
+  if (!accessToken) {
+    throw new Error('無法取得 LINE access token')
   }
 
-  return body.accessToken
+  return accessToken
 }
 
 export function clearLineLoginCallback() {
