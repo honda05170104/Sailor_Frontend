@@ -10,7 +10,7 @@ import {
   Skeleton,
 } from '../../components/Dashboard'
 import FavoriteSpeciesCard from '../../components/FavoriteSpeciesCard'
-import UserHeader, { UserCard, UserCopy } from '../../components/UserHeader'
+import UserHeader, { UserHeaderSkeleton } from '../../components/UserHeader'
 import { useAppDispatch, useAppSelector } from '../../customHooks/useApp'
 import { getUser } from '../../redux/features/user'
 import { resolveVipTheme } from '../../utils/vipTheme'
@@ -40,13 +40,7 @@ function ProfileSkeleton() {
   return (
     <Dashboard>
       <Scroll aria-busy="true" aria-label="載入中">
-        <UserCard>
-          <Skeleton $variant="avatar" />
-          <UserCopy>
-            <Skeleton $variant="eyebrow" />
-            <Skeleton $variant="title" />
-          </UserCopy>
-        </UserCard>
+        <UserHeaderSkeleton />
         <Skeleton $variant="wide" />
         <Skeleton $variant="wide" />
       </Scroll>
@@ -83,10 +77,7 @@ export default function ProfilePage() {
   return (
     <Dashboard $vip={vipTheme}>
       <Scroll>
-        <UserHeader
-          user={user}
-          eyebrow="個人頁"
-        />
+        <UserHeader user={user} />
 
         <ProfileCard>
           <CardTitle>個人資料</CardTitle>

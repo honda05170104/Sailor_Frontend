@@ -3,7 +3,7 @@ import JsBarcode from 'jsbarcode'
 import { useNavigate } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 
-import { Card, Eyebrow, PlaceholderText } from './Dashboard'
+import { Card, Eyebrow, PlaceholderText, Skeleton } from './Dashboard'
 import type { UserProfile } from '../utils/user'
 import {
   resolveVipTheme,
@@ -11,6 +11,15 @@ import {
   VIP_TAG_COLOR,
   type VipThemeKey,
 } from '../utils/vipTheme'
+
+const VIP_CARD_IMAGE: Record<VipThemeKey, string> = {
+  bronze: '/member/one.png',
+  silver: '/member/two.png',
+  gold: '/member/two.png',
+  black: '/member/three.png',
+}
+
+const DEFAULT_EYEBROW = '歡迎回來'
 
 function BarcodeIcon() {
   return (
@@ -31,13 +40,26 @@ function memberCode(user?: UserProfile | null) {
 
 type UserHeaderProps = {
   user?: UserProfile | null
-  eyebrow: string
+  /** @default 歡迎回來 */
+  eyebrow?: string
   onProfileClick?: () => void
+}
+
+export function UserHeaderSkeleton() {
+  return (
+    <UserCard>
+      <Skeleton $variant="avatar" />
+      <UserCopy>
+        <Skeleton $variant="eyebrow" />
+        <Skeleton $variant="title" />
+      </UserCopy>
+    </UserCard>
+  )
 }
 
 export default function UserHeader({
   user,
-  eyebrow,
+  eyebrow = DEFAULT_EYEBROW,
   onProfileClick,
 }: UserHeaderProps) {
   const navigate = useNavigate()
@@ -47,6 +69,7 @@ export default function UserHeader({
   const code = memberCode(user)
   const vipName = user?.vip?.name?.trim() || '銅卡'
   const vipTheme = resolveVipTheme(user?.vip)
+  const cardImage = VIP_CARD_IMAGE[vipTheme]
 
   useEffect(() => {
     if (!open) return
@@ -132,6 +155,31 @@ export default function UserHeader({
           />
           <BarcodeSheet role="dialog" aria-modal="true" aria-labelledby="member-barcode-title">
             <BarcodeTitle id="member-barcode-title">會員條碼</BarcodeTitle>
+            <MemberCard>
+              <MemberCardImage
+                src={cardImage}
+                alt={`${vipName}會員卡`}
+              />
+              <MemberCardOverlay>
+                <CardRow>
+                  {user?.avatarUrl ? (
+                    <CardAvatar src={user.avatarUrl} alt="" />
+                  ) : (
+                    <CardAvatarFallback>
+                      {displayName?.charAt(0) || '?'}
+                    </CardAvatarFallback>
+                  )}
+                </CardRow>
+                <CardRow>
+                  <CardLabel>姓名</CardLabel>
+                  <CardValue>{displayName || '會員'}</CardValue>
+                </CardRow>
+                <CardRow>
+                  <CardLabel>期限</CardLabel>
+                  <CardValue>永久有效</CardValue>
+                </CardRow>
+              </MemberCardOverlay>
+            </MemberCard>
             <BarcodeFrame>
               {code ? <svg ref={svgRef} /> : <BarcodeHint>尚無會員條碼</BarcodeHint>}
             </BarcodeFrame>
@@ -281,6 +329,92 @@ const BarcodeTitle = styled.p`
   font-weight: 700;
   letter-spacing: -0.03em;
   text-align: center;
+`
+
+const MemberCard = styled.div`
+  position: relative;
+  margin: 0 0 0.85rem;
+  overflow: hidden;
+  border-radius: 0.85rem;
+`
+
+const MemberCardImage = styled.img`
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+`
+
+const MemberCardOverlay = styled.div`
+  position: absolute;
+  top: calc(32% + 10px);
+  right: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  max-width: 48%;
+`
+
+const CardRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  width: 100%;
+
+  &:first-child {
+    margin-top: 5px;
+  }
+
+  &:not(:first-child) {
+    transform: translateX(-24px);
+  }
+`
+
+const cardAvatarStyles = css`
+  width: calc(3rem + 3px);
+  height: calc(3rem + 3px);
+  flex: 0 0 auto;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #2c2c2e;
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+`
+
+const CardAvatar = styled.img`
+  ${cardAvatarStyles}
+`
+
+const CardAvatarFallback = styled.span`
+  ${cardAvatarStyles}
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 700;
+`
+
+const CardLabel = styled.span`
+  flex: 0 0 auto;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
+`
+
+const CardValue = styled.span`
+  min-width: 0;
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
 `
 
 const BarcodeFrame = styled.div`

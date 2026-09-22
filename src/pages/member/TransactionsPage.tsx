@@ -38,9 +38,6 @@ function statusChips(tx: Transaction) {
 function TransactionCard({ tx }: { tx: Transaction }) {
   const chips = statusChips(tx)
   const items = tx.items ?? []
-  const foot = [tx.paymentMethod, tx.staff, tx.invoice ? `發票 ${tx.invoice}` : null]
-    .filter((value): value is string => Boolean(value?.trim()))
-    .join(' · ')
   const meta = [
     tx.orderNo ? `訂單 ${tx.orderNo}` : null,
     tx.pickupNo ? `取餐 ${tx.pickupNo}` : null,
@@ -77,8 +74,7 @@ function TransactionCard({ tx }: { tx: Transaction }) {
           ))}
         </TxItems>
       ) : null}
-      {foot ? <TxFoot>{foot}</TxFoot> : null}
-      {tx.note?.trim() ? <TxFoot>{tx.note}</TxFoot> : null}
+      {tx.note?.trim() ? <TxNote>{tx.note}</TxNote> : null}
     </TxCard>
   )
 }
@@ -223,7 +219,7 @@ const TxItem = styled.li`
   }
 `
 
-const TxFoot = styled.p`
+const TxNote = styled.p`
   margin: 0.7rem 0 0;
   color: var(--dash-muted);
   font-size: 0.78rem;

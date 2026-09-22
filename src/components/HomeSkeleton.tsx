@@ -2,19 +2,13 @@ import styled from 'styled-components'
 
 import BottomNav from './BottomNav'
 import { Dashboard, Scroll, Skeleton } from './Dashboard'
-import { UserCard, UserCopy } from './UserHeader'
+import { UserHeaderSkeleton } from './UserHeader'
 
 export default function HomeSkeleton() {
   return (
     <Dashboard>
       <Scroll aria-busy="true" aria-label="載入中">
-        <UserCard>
-          <Skeleton $variant="avatar" />
-          <UserCopy>
-            <Skeleton $variant="eyebrow" />
-            <Skeleton $variant="title" />
-          </UserCopy>
-        </UserCard>
+        <UserHeaderSkeleton />
         <Stats>
           <Skeleton $variant="stat" />
           <Skeleton $variant="stat" />

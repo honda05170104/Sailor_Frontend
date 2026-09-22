@@ -29,6 +29,14 @@ function restoreLiffState() {
 export async function initLiff() {
   if (!LIFF_ID) return
 
+  const isLocal =
+    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+
+  if (isLocal) {
+    restoreLiffState()
+    return
+  }
+
   try {
     await liff.init({ liffId: LIFF_ID })
   } catch (error) {

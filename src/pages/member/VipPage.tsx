@@ -1,40 +1,65 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import BottomNav from '../../components/BottomNav'
 import { Card, Dashboard, Scroll, Skeleton } from '../../components/Dashboard'
-import UserHeader, { UserCard, UserCopy } from '../../components/UserHeader'
+import UserHeader, { UserHeaderSkeleton } from '../../components/UserHeader'
 import { useAppDispatch, useAppSelector } from '../../customHooks/useApp'
-import { getUser, getVips } from '../../redux/features/user'
-import type { VipTier } from '../../utils/user'
-import { resolveVipTheme } from '../../utils/vipTheme'
+import { getUser } from '../../redux/features/user'
+import { resolveVipTheme, type VipThemeKey } from '../../utils/vipTheme'
 
-function formatSpend(amount?: number) {
-  if (!amount) return '加入即是'
-  return `累積消費 $${amount.toLocaleString()}`
+type VipRule = {
+  id: string
+  name: string
+  theme: VipThemeKey
+  requirement: string
+  notes?: string[]
+  benefits: string[]
 }
 
-function formatDiscount(percent?: number) {
-  if (!percent) return '無額外折扣'
-  return `折扣 ${percent}%`
-}
-
-function sortVips(vips: VipTier[]) {
-  return [...vips].sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
-}
+const VIP_RULES: VipRule[] = [
+  {
+    id: 'general',
+    name: '一般會員',
+    theme: 'bronze',
+    requirement: '註冊即加入',
+    notes: ['累積消費'],
+    benefits: [],
+  },
+  {
+    id: 'gold',
+    name: '金卡',
+    theme: 'gold',
+    requirement: '累積消費一年內 $3,500',
+    notes: ['舊會員（已消費滿 $100）：三年內不會降級'],
+    benefits: [
+      '用品類 85 折（活體、餌料、缸除外）',
+      '寄宿動物一天折 $50',
+      '升等禮 $100 折價券',
+    ],
+  },
+  {
+    id: 'black',
+    name: '黑卡',
+    theme: 'black',
+    requirement: '累積消費一年內 $12,000',
+    benefits: [
+      '用品類 75 折（活體、餌料、缸除外）',
+      '生日現金折價券：$600',
+      '寄宿動物免費',
+      '黑卡專屬社群',
+      '不定期提供品牌活動',
+      '升等禮 $300 折價券',
+    ],
+  },
+]
 
 function VipSkeleton() {
   return (
     <Dashboard>
       <Scroll aria-busy="true" aria-label="載入中">
-        <UserCard>
-          <Skeleton $variant="avatar" />
-          <UserCopy>
-            <Skeleton $variant="eyebrow" />
-            <Skeleton $variant="title" />
-          </UserCopy>
-        </UserCard>
+        <UserHeaderSkeleton />
         <Skeleton $variant="wide" />
         <Skeleton $variant="wide" />
       </Scroll>
@@ -49,19 +74,13 @@ export default function VipPage() {
   const { data, loading, error } = useAppSelector(
     (state) => state.userReducer.getUser,
   )
-  const vipsState = useAppSelector((state) => state.userReducer.getVips)
   const user = data?.user
-  const vips = useMemo(() => sortVips(vipsState.data?.vips ?? []), [vipsState.data?.vips])
 
   useEffect(() => {
     if (!user && !loading && !error) {
       void dispatch(getUser())
     }
   }, [dispatch, error, loading, user])
-
-  useEffect(() => {
-    void dispatch(getVips())
-  }, [dispatch])
 
   if (loading || (!user && !error)) {
     return <VipSkeleton />
@@ -74,30 +93,36 @@ export default function VipPage() {
       <Scroll>
         <UserHeader
           user={user}
-          eyebrow="歡迎回來"
           onProfileClick={() => navigate('/profile')}
         />
 
-        {vips.length ? (
-          <InfoCard>
-            <CardTitle>會員權益</CardTitle>
-            <VipList>
-              {vips.map((vip) => (
-                <VipItem key={vip.id}>
-                  <VipItemName>{vip.name}</VipItemName>
-                  <VipItemMeta>{formatSpend(vip.minSpend)}</VipItemMeta>
-                  <VipItemMeta>{formatDiscount(vip.discountPercent)}</VipItemMeta>
-                  {vip.description?.trim() ? (
-                    <VipItemDesc>{vip.description}</VipItemDesc>
-                  ) : null}
-                </VipItem>
-              ))}
-            </VipList>
-            <Disclaimer>
-              *水手保有修改誠品會員各項權益之權利，最新內容請以水手官方網站或門市相關公告為準。
-            </Disclaimer>
-          </InfoCard>
-        ) : null}
+        <InfoCard>
+          <CardTitle>會員規則</CardTitle>
+          <VipList>
+            {VIP_RULES.map((vip) => (
+              <VipItem key={vip.id} $theme={vip.theme}>
+                <VipItemName>{vip.name}</VipItemName>
+                <VipItemMeta>{vip.requirement}</VipItemMeta>
+                {vip.notes?.map((note) => (
+                  <VipItemNote key={note}>{note}</VipItemNote>
+                ))}
+                {vip.benefits.length ? (
+                  <BenefitList>
+                    {vip.benefits.map((benefit, index) => (
+                      <li key={benefit}>
+                        <BenefitIndex>{index + 1}.</BenefitIndex>
+                        <span>{benefit}</span>
+                      </li>
+                    ))}
+                  </BenefitList>
+                ) : null}
+              </VipItem>
+            ))}
+          </VipList>
+          <Disclaimer>
+            *水手保有修改會員各項權益之權利，最新內容請以水手官方公告或門市相關公告為準。
+          </Disclaimer>
+        </InfoCard>
       </Scroll>
 
       <BottomNav />
@@ -122,10 +147,17 @@ const VipList = styled.div`
   margin-top: 0.9rem;
 `
 
-const VipItem = styled.article`
+const VipItem = styled.article<{ $theme: VipThemeKey }>`
   padding: 0.85rem 0.9rem;
   border-radius: 1rem;
   background: rgba(255, 255, 255, 0.04);
+  border-left: 3px solid
+    ${({ $theme }) =>
+      $theme === 'gold'
+        ? '#c9a227'
+        : $theme === 'black'
+          ? '#f0f0f0'
+          : '#b87333'};
 `
 
 const VipItemName = styled.p`
@@ -136,15 +168,38 @@ const VipItemName = styled.p`
 `
 
 const VipItemMeta = styled.p`
-  margin: 0.28rem 0 0;
+  margin: 0.35rem 0 0;
   color: var(--dash-muted);
-  font-size: 0.82rem;
+  font-size: 0.86rem;
+  line-height: 1.4;
 `
 
-const VipItemDesc = styled.p`
-  margin: 0.4rem 0 0;
-  font-size: 0.88rem;
+const VipItemNote = styled.p`
+  margin: 0.3rem 0 0;
+  color: var(--dash-muted);
+  font-size: 0.82rem;
   line-height: 1.45;
+`
+
+const BenefitList = styled.ol`
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.65rem 0 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    gap: 0.35rem;
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+`
+
+const BenefitIndex = styled.span`
+  flex: 0 0 auto;
+  color: var(--dash-muted);
+  font-weight: 650;
 `
 
 const Disclaimer = styled.p`
