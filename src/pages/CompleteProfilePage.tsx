@@ -110,15 +110,17 @@ export default function CompleteProfilePage() {
           </CompleteField>
           <CompleteField>
             <span>生日</span>
-            <input
-              type="date"
-              name="birthday"
-              value={birthday}
-              max={maxBirthday}
-              min="1900-01-01"
-              onChange={(event) => setBirthday(event.target.value)}
-              required
-            />
+            <DateInputShell>
+              <input
+                type="date"
+                name="birthday"
+                value={birthday}
+                max={maxBirthday}
+                min="1900-01-01"
+                onChange={(event) => setBirthday(event.target.value)}
+                required
+              />
+            </DateInputShell>
           </CompleteField>
           <CompleteSubmit type="submit" disabled={loading}>
             {loading ? '儲存中…' : '完成'}
@@ -138,6 +140,7 @@ export default function CompleteProfilePage() {
 }
 
 const CompleteStage = styled(LoginStage)`
+  align-items: stretch;
   text-align: left;
 `
 
@@ -162,6 +165,7 @@ const CompleteForm = styled.form`
   flex-direction: column;
   gap: 1rem;
   width: 100%;
+  min-width: 0;
   margin-top: 2rem;
 `
 
@@ -175,6 +179,8 @@ const CompleteField = styled.label`
 
   input {
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
     min-height: 3.25rem;
     padding: 0 1rem;
     border: 1px solid rgba(255, 255, 255, 0.16);
@@ -188,6 +194,54 @@ const CompleteField = styled.label`
   input:focus {
     outline: 2px solid #6cc762;
     outline-offset: 1px;
+  }
+`
+
+const DateInputShell = styled.span`
+  display: block;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 1rem;
+  background: #1c1c1e;
+
+  &:focus-within {
+    outline: 2px solid #6cc762;
+    outline-offset: 1px;
+  }
+
+  input[type='date'] {
+    display: block;
+    height: 3.25rem;
+    min-height: 3.25rem;
+    padding-right: 0.75rem;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    appearance: none;
+    -webkit-appearance: none;
+    text-align: left;
+
+    &:focus {
+      outline: none;
+    }
+
+    &::-webkit-date-and-time-value {
+      text-align: left;
+      min-height: 1.5em;
+    }
+
+    &::-webkit-datetime-edit {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    &::-webkit-calendar-picker-indicator {
+      margin: 0 0 0 0.35rem;
+      filter: invert(1);
+      opacity: 0.7;
+    }
   }
 `
 
