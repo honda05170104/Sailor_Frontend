@@ -2,12 +2,12 @@ import { type FormEvent, useEffect, useMemo, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { DashboardLoading, Status } from '../components/Dashboard'
-import { useAppDispatch, useAppSelector } from '../customHooks/useApp'
-import { getUser, logout, updateProfile } from '../redux/features/user'
+import { DashboardLoading, Status } from '../../components/Dashboard'
+import { useAppDispatch, useAppSelector } from '../../customHooks/useApp'
+import { getUser, logout, updateProfile } from '../../redux/features/user'
 import { LoginError, LoginMain, LoginStage } from './LoginPage'
-import { peekReturnTo } from '../utils/returnTo'
-import { isProfileIncomplete } from '../utils/user'
+import { peekReturnTo } from '../../utils/returnTo'
+import { isProfileIncomplete } from '../../utils/user'
 
 function todayIsoDate() {
   const now = new Date()

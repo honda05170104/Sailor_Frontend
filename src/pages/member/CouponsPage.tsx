@@ -1,16 +1,16 @@
 import { useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 
-import BottomNav from '../components/BottomNav'
+import BottomNav from '../../components/BottomNav'
 import {
   Card,
   Dashboard,
   Scroll,
   Skeleton,
-} from '../components/Dashboard'
-import { useAppDispatch, useAppSelector } from '../customHooks/useApp'
-import { getCoupons } from '../redux/features/user'
-import type { Coupon } from '../utils/user'
+} from '../../components/Dashboard'
+import { useAppDispatch, useAppSelector } from '../../customHooks/useApp'
+import { getCoupons } from '../../redux/features/user'
+import type { Coupon } from '../../utils/user'
 
 const STATUS_LABELS: Record<string, string> = {
   available: '可使用',

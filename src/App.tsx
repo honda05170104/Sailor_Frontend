@@ -4,15 +4,15 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-route
 import RequireAuth from './components/RequireAuth'
 import RequireProfile from './components/RequireProfile'
 import ScrollToTop from './components/ScrollToTop'
-import CompleteProfilePage from './pages/CompleteProfilePage'
-import ComingSoonPage from './pages/ComingSoonPage'
-import CouponsPage from './pages/CouponsPage'
-import HomePage from './pages/HomePage'
-import LoginPage from './pages/LoginPage'
-import ProfilePage from './pages/ProfilePage'
-import StoreInfoPage from './pages/StoreInfoPage'
-import TransactionsPage from './pages/TransactionsPage'
-import VipPage from './pages/VipPage'
+import CompleteProfilePage from './pages/member/CompleteProfilePage'
+import ComingSoonPage from './pages/member/ComingSoonPage'
+import CouponsPage from './pages/member/CouponsPage'
+import HomePage from './pages/member/HomePage'
+import LoginPage from './pages/member/LoginPage'
+import ProfilePage from './pages/member/ProfilePage'
+import TransactionsPage from './pages/member/TransactionsPage'
+import VipPage from './pages/member/VipPage'
+import StoreInfoPage from './pages/official/StoreInfoPage'
 import { getAuthToken } from './utils/auth'
 import { clearReturnToIfMatched, peekReturnTo } from './utils/returnTo'
 
@@ -43,6 +43,7 @@ export default function App() {
       <ReturnToJanitor />
       <Routes>
         <Route path="/login" element={<LoginRoute />} />
+        <Route path="/store" element={<StoreInfoPage />} />
 
         <Route element={<RequireAuth />}>
           <Route path="/complete-profile" element={<CompleteProfilePage />} />
@@ -60,7 +61,6 @@ export default function App() {
               path="/boarding"
               element={<ComingSoonPage title="寄宿申請" />}
             />
-            <Route path="/store" element={<StoreInfoPage />} />
           </Route>
         </Route>
 

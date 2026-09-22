@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import BottomNav from '../components/BottomNav'
-import { Card, Dashboard, Scroll } from '../components/Dashboard'
-import HomeSkeleton from '../components/HomeSkeleton'
-import StoreEventsCarousel from '../components/StoreEventsCarousel'
-import UserHeader from '../components/UserHeader'
-import { useAppDispatch, useAppSelector } from '../customHooks/useApp'
-import { getUser } from '../redux/features/user'
-import { resolveVipTheme } from '../utils/vipTheme'
+import BottomNav from '../../components/BottomNav'
+import { Card, Dashboard, Scroll } from '../../components/Dashboard'
+import HomeSkeleton from '../../components/HomeSkeleton'
+import StoreEventsCarousel from '../../components/StoreEventsCarousel'
+import UserHeader from '../../components/UserHeader'
+import { useAppDispatch, useAppSelector } from '../../customHooks/useApp'
+import { getUser } from '../../redux/features/user'
+import { resolveVipTheme } from '../../utils/vipTheme'
 
 export default function HomePage() {
   const dispatch = useAppDispatch()

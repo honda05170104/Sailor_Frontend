@@ -2,16 +2,16 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import styled, { keyframes } from 'styled-components'
 
-import { useAppDispatch, useAppSelector } from '../customHooks/useApp'
-import { lineLogin } from '../redux/features/user'
-import { isProfileIncomplete } from '../utils/user'
+import { useAppDispatch, useAppSelector } from '../../customHooks/useApp'
+import { lineLogin } from '../../redux/features/user'
+import { isProfileIncomplete } from '../../utils/user'
 import {
   clearLineLoginCallback,
   hasLineChannelId,
   startLineLogin,
   takeLineLoginCallback,
-} from '../utils/lineAuth'
-import { getPostAuthPath } from '../utils/returnTo'
+} from '../../utils/lineAuth'
+import { getPostAuthPath } from '../../utils/returnTo'
 
 const rise = keyframes`
   from {

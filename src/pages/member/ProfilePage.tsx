@@ -1,19 +1,19 @@
 import { useEffect } from 'react'
 import styled from 'styled-components'
 
-import BottomNav from '../components/BottomNav'
+import BottomNav from '../../components/BottomNav'
 import {
   Card,
   Dashboard,
   PlaceholderText,
   Scroll,
   Skeleton,
-} from '../components/Dashboard'
-import FavoriteSpeciesCard from '../components/FavoriteSpeciesCard'
-import UserHeader, { UserCard, UserCopy } from '../components/UserHeader'
-import { useAppDispatch, useAppSelector } from '../customHooks/useApp'
-import { getUser } from '../redux/features/user'
-import { resolveVipTheme } from '../utils/vipTheme'
+} from '../../components/Dashboard'
+import FavoriteSpeciesCard from '../../components/FavoriteSpeciesCard'
+import UserHeader, { UserCard, UserCopy } from '../../components/UserHeader'
+import { useAppDispatch, useAppSelector } from '../../customHooks/useApp'
+import { getUser } from '../../redux/features/user'
+import { resolveVipTheme } from '../../utils/vipTheme'
 
 function formatBirthday(value?: string) {
   if (!value?.trim()) return null

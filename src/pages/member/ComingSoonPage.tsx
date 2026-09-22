@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 
-import BottomNav from '../components/BottomNav'
-import { Card, Dashboard, Scroll } from '../components/Dashboard'
+import BottomNav from '../../components/BottomNav'
+import { Card, Dashboard, Scroll } from '../../components/Dashboard'
 
 export default function ComingSoonPage({ title }: { title: string }) {
   return (

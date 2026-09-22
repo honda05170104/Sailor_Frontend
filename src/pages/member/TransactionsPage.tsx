@@ -1,17 +1,17 @@
 import { useEffect } from 'react'
 import styled from 'styled-components'
 
-import BottomNav from '../components/BottomNav'
+import BottomNav from '../../components/BottomNav'
 import {
   Card,
   Dashboard,
   PlaceholderText,
   Scroll,
   Skeleton,
-} from '../components/Dashboard'
-import { useAppDispatch, useAppSelector } from '../customHooks/useApp'
-import { getTransactions } from '../redux/features/user'
-import type { Transaction } from '../utils/user'
+} from '../../components/Dashboard'
+import { useAppDispatch, useAppSelector } from '../../customHooks/useApp'
+import { getTransactions } from '../../redux/features/user'
+import type { Transaction } from '../../utils/user'
 
 function formatMoney(amount?: number) {
   return `$${(amount ?? 0).toLocaleString()}`

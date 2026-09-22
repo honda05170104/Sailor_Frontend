@@ -1,7 +1,10 @@
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import BottomNav from '../components/BottomNav'
-import { Card, Dashboard, Scroll } from '../components/Dashboard'
+import BottomNav from '../../components/BottomNav'
+import { Card, Dashboard, Scroll } from '../../components/Dashboard'
+import { getAuthToken } from '../../utils/auth'
+import { saveReturnTo } from '../../utils/returnTo'
 
 type Store = {
   name: string
@@ -57,11 +60,24 @@ const STORES: Store[] = [
 ]
 
 export default function StoreInfoPage() {
+  const navigate = useNavigate()
+  const loggedIn = Boolean(getAuthToken())
+
+  function onLogin() {
+    saveReturnTo('/store')
+    navigate('/login')
+  }
+
   return (
     <Dashboard>
-      <Scroll>
+      <PageScroll $withNav={loggedIn}>
         <PageHeader>
           <PageTitle>門市資訊</PageTitle>
+          {loggedIn ? null : (
+            <LoginBtn type="button" onClick={onLogin}>
+              登入會員
+            </LoginBtn>
+          )}
         </PageHeader>
 
         <StoreList>
@@ -98,13 +114,21 @@ export default function StoreInfoPage() {
             </InfoCard>
           ))}
         </StoreList>
-      </Scroll>
-      <BottomNav />
+      </PageScroll>
+      {loggedIn ? <BottomNav /> : null}
     </Dashboard>
   )
 }
 
+const PageScroll = styled(Scroll)<{ $withNav?: boolean }>`
+  padding-bottom: ${({ $withNav }) => ($withNav ? '6.5rem' : '2rem')};
+`
+
 const PageHeader = styled.header`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
   margin: 0.15rem 0 1rem;
 `
 
@@ -114,6 +138,19 @@ const PageTitle = styled.h1`
   font-weight: 700;
   letter-spacing: -0.04em;
   line-height: 1.15;
+`
+
+const LoginBtn = styled.button`
+  flex: 0 0 auto;
+  min-height: 2.15rem;
+  padding: 0 0.9rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 999px;
+  background: var(--color-glass);
+  color: var(--color-white);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
 `
 
 const StoreList = styled.div`
