@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 import { ApiError } from "../../utils/api";
 import { clearAuthToken } from "../../utils/auth";
+import { clearReturnTo } from "../../utils/returnTo";
 import {
   exchangeLineAccessToken,
   type LineLoginPayload,
@@ -202,6 +203,7 @@ export const logout = createAsyncThunk("user/logout", async () => {
     // clear local session anyway
   } finally {
     clearAuthToken();
+    clearReturnTo();
     window.location.assign("/login");
   }
 

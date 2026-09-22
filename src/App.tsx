@@ -1,4 +1,5 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { useEffect } from 'react'
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 
 import RequireAuth from './components/RequireAuth'
 import RequireProfile from './components/RequireProfile'
@@ -13,19 +14,33 @@ import StoreInfoPage from './pages/StoreInfoPage'
 import TransactionsPage from './pages/TransactionsPage'
 import VipPage from './pages/VipPage'
 import { getAuthToken } from './utils/auth'
+import { clearReturnToIfMatched, peekReturnTo } from './utils/returnTo'
 
 function LoginRoute() {
   if (getAuthToken()) {
-    return <Navigate to="/" replace />
+    return <Navigate to={peekReturnTo() || '/'} replace />
   }
 
   return <LoginPage />
+}
+
+function ReturnToJanitor() {
+  const location = useLocation()
+  const token = getAuthToken()
+
+  useEffect(() => {
+    if (!token) return
+    clearReturnToIfMatched(location.pathname)
+  }, [location.pathname, token])
+
+  return null
 }
 
 export default function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <ReturnToJanitor />
       <Routes>
         <Route path="/login" element={<LoginRoute />} />
 

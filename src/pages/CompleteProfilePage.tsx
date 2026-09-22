@@ -6,6 +6,7 @@ import { DashboardLoading, Status } from '../components/Dashboard'
 import { useAppDispatch, useAppSelector } from '../customHooks/useApp'
 import { getUser, logout, updateProfile } from '../redux/features/user'
 import { LoginError, LoginMain, LoginStage } from './LoginPage'
+import { peekReturnTo } from '../utils/returnTo'
 import { isProfileIncomplete } from '../utils/user'
 
 function todayIsoDate() {
@@ -68,7 +69,7 @@ export default function CompleteProfilePage() {
   }
 
   if (user && !isProfileIncomplete(user)) {
-    return <Navigate to="/" replace />
+    return <Navigate to={peekReturnTo() || '/'} replace />
   }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -85,7 +86,7 @@ export default function CompleteProfilePage() {
     setFormError(null)
     const result = await dispatch(updateProfile({ mobile: nextMobile, birthday }))
     if (updateProfile.fulfilled.match(result)) {
-      navigate('/', { replace: true })
+      navigate(peekReturnTo() || '/', { replace: true })
     }
   }
 

@@ -11,6 +11,7 @@ import {
   startLineLogin,
   takeLineLoginCallback,
 } from '../utils/lineAuth'
+import { getPostAuthPath } from '../utils/returnTo'
 
 const rise = keyframes`
   from {
@@ -39,8 +40,9 @@ export default function LoginPage() {
   useEffect(() => {
     if (data) {
       clearLineLoginCallback()
-      const nextPath =
-        data.isNew || isProfileIncomplete(data.user) ? '/complete-profile' : '/'
+      const nextPath = getPostAuthPath(
+        data.isNew || isProfileIncomplete(data.user),
+      )
       navigate(nextPath, { replace: true })
     }
   }, [data, navigate])
