@@ -86,6 +86,14 @@ export const Eyebrow = styled.p`
   font-size: 0.95rem;
 `
 
+export const SectionTitle = styled.h1`
+  margin: 0.15rem 0 1rem;
+  font-size: clamp(1.6rem, 6vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+`
+
 export const PlaceholderText = styled.span`
   color: var(--dash-muted);
   font-weight: 500;

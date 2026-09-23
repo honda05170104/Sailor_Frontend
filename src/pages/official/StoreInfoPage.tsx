@@ -1,21 +1,12 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import BottomNav from '../../components/BottomNav'
-import { Card, Dashboard, Scroll } from '../../components/Dashboard'
+import { Card, Dashboard, Scroll, SectionTitle, Skeleton } from '../../components/Dashboard'
 import { getAuthToken } from '../../utils/auth'
 import { saveReturnTo } from '../../utils/returnTo'
-
-type Store = {
-  name: string
-  address: string
-  phone?: string
-  hoursLabel?: string
-  hours?: string
-  lineUrl?: string
-}
-
-const STORE_HOURS = '13:00 – 22:00'
+import { getStoresApi, type Store } from '../../utils/store'
 
 function storeQuery(store: Store) {
   return `${store.name} ${store.address}`
@@ -35,62 +26,30 @@ function googleMapsEmbedUrl(store: Store) {
   return `https://maps.google.com/maps?${params.toString()}`
 }
 
-const STORES: Store[] = [
-  {
-    name: '水手兩棲爬蟲•異寵-台北店',
-    address: '臺北市大同區鄰江里',
-    phone: '02 2585 5883',
-    lineUrl: 'https://lin.ee/nKeJvy2',
-  },
-  {
-    name: '水手兩棲爬蟲•異寵-新北永和店',
-    address: '新北市永和區保安里',
-    phone: '02 2922 5585',
-    lineUrl: 'https://lin.ee/y9T5YYa',
-  },
-  {
-    name: '水手兩棲爬蟲•異寵-南港店',
-    address: '南港路二段20巷5號B1',
-    phone: '02 2651 2131',
-    lineUrl: 'https://lin.ee/PBdBnkf',
-  },
-  {
-    name: '水手兩棲爬蟲•異寵-桃園店',
-    address: '桃園市桃園區中寧里',
-    phone: '03 215 1745',
-    lineUrl: 'https://lin.ee/KY5mOAN',
-  },
-  {
-    name: '水手兩棲爬蟲•異寵-台中',
-    address: '台中市南屯區田心里五權西路二段380號',
-    phone: '04 2475 0068',
-    lineUrl: 'https://lin.ee/55Zo3S2',
-  },
-  {
-    name: '水手兩棲爬蟲•異寵-彰化田尾店',
-    address: '彰化縣田尾鄉中山路一段217號',
-    phone: '04 883 6682',
-    hoursLabel: '營業日期',
-    hours: '本店採不定期公休，建議到訪前確認',
-    lineUrl: 'https://lin.ee/tvY9Teu',
-  },
-  {
-    name: '水手兩棲爬蟲•異寵-台南',
-    address: '臺南市安南區鳳凰里北安路三段179號',
-    phone: '06 245 0255',
-    lineUrl: 'https://lin.ee/UBL2twj',
-  },
-  {
-    name: '水手兩棲爬蟲•異寵-高雄',
-    address: '高雄市鼓山區龍水里明誠四路112號1F',
-    phone: '07 586 6090',
-    lineUrl: 'https://lin.ee/haZB1yM',
-  },
-]
-
 export default function StoreInfoPage() {
   const navigate = useNavigate()
   const loggedIn = Boolean(getAuthToken())
+  const [stores, setStores] = useState<Store[] | null>(null)
+  const [storesError, setStoresError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    void getStoresApi()
+      .then((result) => {
+        if (cancelled) return
+        setStores(result?.stores ?? [])
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return
+        setStoresError(err instanceof Error ? err.message : '取得門市資料失敗')
+        setStores([])
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   function onLogin() {
     saveReturnTo('/store')
@@ -109,9 +68,18 @@ export default function StoreInfoPage() {
           )}
         </PageHeader>
 
-        <StoreList>
-          {STORES.map((store) => (
-            <InfoCard key={store.name}>
+        {stores === null ? (
+          <StoreList aria-busy="true" aria-label="載入門市">
+            <Skeleton $variant="wide" />
+            <Skeleton $variant="wide" />
+            <Skeleton $variant="wide" />
+          </StoreList>
+        ) : storesError ? (
+          <EmptyCard>{storesError}</EmptyCard>
+        ) : stores.length ? (
+          <StoreList>
+            {stores.map((store) => (
+            <InfoCard key={store.id}>
               <MapPreview
                 href={googleMapsUrl(store)}
                 target="_blank"
@@ -140,10 +108,12 @@ export default function StoreInfoPage() {
                     </PhoneLink>
                   </InfoRow>
                 ) : null}
-                <InfoRow>
-                  <InfoLabel>{store.hoursLabel ?? '營業時間'}</InfoLabel>
-                  <InfoValue>{store.hours ?? STORE_HOURS}</InfoValue>
-                </InfoRow>
+                {store.hours?.trim() ? (
+                  <InfoRow>
+                    <InfoLabel>{store.hoursLabel?.trim() || '營業時間'}</InfoLabel>
+                    <InfoValue>{store.hours}</InfoValue>
+                  </InfoRow>
+                ) : null}
                 {store.lineUrl ? (
                   <LineBtn
                     href={store.lineUrl}
@@ -165,6 +135,9 @@ export default function StoreInfoPage() {
             </InfoCard>
           ))}
         </StoreList>
+        ) : (
+          <EmptyCard>尚無門市資料</EmptyCard>
+        )}
       </PageScroll>
       {loggedIn ? <BottomNav /> : null}
     </Dashboard>
@@ -183,12 +156,8 @@ const PageHeader = styled.header`
   margin: 0.15rem 0 1rem;
 `
 
-const PageTitle = styled.h1`
+const PageTitle = styled(SectionTitle)`
   margin: 0;
-  font-size: clamp(1.6rem, 6vw, 2rem);
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 1.15;
 `
 
 const LoginBtn = styled.button`
@@ -207,6 +176,16 @@ const LoginBtn = styled.button`
 const StoreList = styled.div`
   display: grid;
   gap: 0.75rem;
+`
+
+const EmptyCard = styled(Card)`
+  display: grid;
+  place-items: center;
+  min-height: 11rem;
+  padding: 1.5rem 1.1rem;
+  color: var(--dash-muted);
+  font-size: 0.88rem;
+  text-align: center;
 `
 
 const InfoCard = styled(Card)`

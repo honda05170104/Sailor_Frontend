@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
-import JsBarcode from 'jsbarcode'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 
@@ -32,10 +31,35 @@ function BarcodeIcon() {
   )
 }
 
-function memberCode(user?: UserProfile | null) {
-  const mobile = user?.mobile?.trim()
-  if (mobile) return mobile
-  return user?.id?.trim() || ''
+function formatVipExpiry(value?: string | null) {
+  if (!value?.trim()) return null
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return null
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}/${month}/${day}`
+}
+
+function formatBirthday(value?: string) {
+  if (!value?.trim()) return null
+  const date = value.slice(0, 10)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return date
+  const [year, month, day] = date.split('-')
+  return `${year}/${month}/${day}`
+}
+
+function formatMobile(value?: string) {
+  const mobile = value?.trim()
+  if (!mobile) return null
+  if (/^09\d{8}$/.test(mobile)) {
+    return `${mobile.slice(0, 4)} ${mobile.slice(4, 7)} ${mobile.slice(7)}`
+  }
+  return mobile
+}
+
+function formatMoney(amount?: number) {
+  return `$${(amount ?? 0).toLocaleString()}`
 }
 
 type UserHeaderProps = {
@@ -64,10 +88,13 @@ export default function UserHeader({
 }: UserHeaderProps) {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
-  const svgRef = useRef<SVGSVGElement>(null)
   const displayName = user?.displayName?.trim()
-  const code = memberCode(user)
   const vipName = user?.vip?.name?.trim() || '銅卡'
+  const nextVipName = user?.nextVip?.name?.trim()
+  const spendToNext = (user?.spendToNext ?? 0).toLocaleString()
+  const vipExpiry = formatVipExpiry(
+    user?.vipExpiresAt ?? user?.vipProgress?.vipExpiresAt,
+  )
   const vipTheme = resolveVipTheme(user?.vip)
   const cardImage = VIP_CARD_IMAGE[vipTheme]
 
@@ -82,20 +109,6 @@ export default function UserHeader({
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [open])
 
-  useEffect(() => {
-    if (!open || !code || !svgRef.current) return
-    JsBarcode(svgRef.current, code, {
-      format: 'CODE128',
-      displayValue: true,
-      fontSize: 14,
-      margin: 8,
-      background: '#ffffff',
-      lineColor: '#111111',
-      width: 2,
-      height: 84,
-    })
-  }, [code, open])
-
   function avatar() {
     return user?.avatarUrl ? (
       <Avatar src={user.avatarUrl} alt="" />
@@ -109,11 +122,11 @@ export default function UserHeader({
       <UserCard>
         <BarcodeBtn
           type="button"
-          aria-label="會員條碼"
+          aria-label="會員詳情"
           onClick={() => setOpen(true)}
         >
           <BarcodeIcon />
-          會員條碼
+          會員詳情
         </BarcodeBtn>
         {onProfileClick ? (
           <AvatarButton type="button" aria-label="個人頁" onClick={onProfileClick}>
@@ -150,11 +163,22 @@ export default function UserHeader({
         <>
           <BarcodeOverlay
             type="button"
-            aria-label="關閉會員條碼"
+            aria-label="關閉會員詳情"
             onClick={() => setOpen(false)}
           />
-          <BarcodeSheet role="dialog" aria-modal="true" aria-labelledby="member-barcode-title">
-            <BarcodeTitle id="member-barcode-title">會員條碼</BarcodeTitle>
+          <BarcodeSheet role="dialog" aria-modal="true" aria-labelledby="member-detail-title">
+            <BarcodeClose type="button" aria-label="關閉" onClick={() => setOpen(false)}>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M6 6l12 12M18 6 6 18"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </BarcodeClose>
+            <BarcodeTitle id="member-detail-title">會員詳情</BarcodeTitle>
             <MemberCard>
               <MemberCardImage
                 src={cardImage}
@@ -176,14 +200,36 @@ export default function UserHeader({
                 </CardRow>
                 <CardRow>
                   <CardLabel>期限</CardLabel>
-                  <CardValue>永久有效</CardValue>
+                  <CardValue>{vipExpiry || '永久有效'}</CardValue>
                 </CardRow>
               </MemberCardOverlay>
             </MemberCard>
-            <BarcodeFrame>
-              {code ? <svg ref={svgRef} /> : <BarcodeHint>尚無會員條碼</BarcodeHint>}
-            </BarcodeFrame>
-            <BarcodeHint>結帳時請出示此條碼</BarcodeHint>
+            <DetailList>
+              {nextVipName ? (
+                <div>
+                  <dt>升級</dt>
+                  <dd>再消費 ${spendToNext} 升級{nextVipName}</dd>
+                </div>
+              ) : null}
+              {vipExpiry ? (
+                <div>
+                  <dt>期限</dt>
+                  <dd>{vipExpiry}</dd>
+                </div>
+              ) : null}
+              <div>
+                <dt>電話</dt>
+                <dd>{formatMobile(user?.mobile) ?? <DetailPlaceholder>0912 345 678</DetailPlaceholder>}</dd>
+              </div>
+              <div>
+                <dt>生日</dt>
+                <dd>{formatBirthday(user?.birthday) ?? <DetailPlaceholder>1990/01/01</DetailPlaceholder>}</dd>
+              </div>
+              <div>
+                <dt>累積消費</dt>
+                <dd>{formatMoney(user?.totalSpend)}</dd>
+              </div>
+            </DetailList>
           </BarcodeSheet>
         </>
       ) : null}
@@ -236,17 +282,16 @@ const NameRow = styled.div`
 const UserName = styled.h1`
   margin: 0;
   min-width: 0;
-  font-size: clamp(1.6rem, 6vw, 2rem);
+  font-size: 1.15rem;
   font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 1.15;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
 
   &[type='button'] {
     padding: 0;
     border: 0;
     background: transparent;
     color: inherit;
-    font: inherit;
     text-align: left;
     cursor: pointer;
   }
@@ -316,6 +361,8 @@ const BarcodeSheet = styled.div`
   top: 50%;
   z-index: 21;
   width: min(calc(100% - 2rem), 22rem);
+  max-height: min(85svh, 40rem);
+  overflow: auto;
   padding: 1.2rem 1.1rem 1.15rem;
   border-radius: 1.35rem;
   background: #ffffff;
@@ -417,22 +464,55 @@ const CardValue = styled.span`
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
 `
 
-const BarcodeFrame = styled.div`
-  overflow: hidden;
-  padding: 0.75rem 0.5rem 0.4rem;
-  border-radius: 0.9rem;
-  background: #ffffff;
+const DetailList = styled.dl`
+  display: grid;
+  gap: 0.75rem;
+  margin: 0.95rem 0 0;
 
-  svg {
-    display: block;
-    width: 100%;
-    height: auto;
+  div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  dt {
+    flex: 0 0 auto;
+    color: #6e6e73;
+    font-size: 0.82rem;
+  }
+
+  dd {
+    margin: 0;
+    color: #111111;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: right;
   }
 `
 
-const BarcodeHint = styled.p`
-  margin: 0.7rem 0 0;
-  color: #6e6e73;
-  font-size: 0.78rem;
-  text-align: center;
+const DetailPlaceholder = styled.span`
+  color: #a1a1a6;
+  font-weight: 500;
+`
+
+const BarcodeClose = styled.button`
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #111111;
+  cursor: pointer;
+
+  svg {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
 `

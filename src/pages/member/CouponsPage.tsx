@@ -6,6 +6,7 @@ import {
   Card,
   Dashboard,
   Scroll,
+  SectionTitle,
   Skeleton,
 } from '../../components/Dashboard'
 import { useAppDispatch, useAppSelector } from '../../customHooks/useApp'
@@ -83,9 +84,6 @@ function CouponsSkeleton() {
   return (
     <Dashboard>
       <Scroll aria-busy="true" aria-label="載入中">
-        <PageHeader>
-          <Skeleton $variant="title" />
-        </PageHeader>
         <ItemList>
           <Skeleton $variant="wide" />
           <Skeleton $variant="wide" />
@@ -112,9 +110,7 @@ export default function CouponsPage() {
   return (
     <Dashboard>
       <Scroll>
-        <PageHeader>
-          <PageTitle>優惠券</PageTitle>
-        </PageHeader>
+        <SectionTitle>優惠券</SectionTitle>
 
         {coupons.length ? (
           <ItemList>
@@ -131,18 +127,6 @@ export default function CouponsPage() {
     </Dashboard>
   )
 }
-
-const PageHeader = styled.header`
-  margin: 0.15rem 0 1rem;
-`
-
-const PageTitle = styled.h1`
-  margin: 0;
-  font-size: clamp(1.6rem, 6vw, 2rem);
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 1.15;
-`
 
 const ItemList = styled.div`
   display: grid;

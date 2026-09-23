@@ -5,8 +5,8 @@ import BottomNav from '../../components/BottomNav'
 import {
   Card,
   Dashboard,
-  PlaceholderText,
   Scroll,
+  SectionTitle,
   Skeleton,
 } from '../../components/Dashboard'
 import { useAppDispatch, useAppSelector } from '../../customHooks/useApp'
@@ -14,67 +14,54 @@ import { getTransactions } from '../../redux/features/user'
 import type { Transaction } from '../../utils/user'
 
 function formatMoney(amount?: number) {
-  return `$${(amount ?? 0).toLocaleString()}`
+  const value = amount ?? 0
+  const formatted = Math.abs(value).toLocaleString()
+  return value < 0 ? `-$${formatted}` : `$${formatted}`
 }
 
-function formatDateTime(value?: string) {
-  if (!value?.trim()) return null
+function formatDate(value?: string) {
+  if (!value?.trim()) return '—'
   const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  const hour = String(date.getHours()).padStart(2, '0')
-  const minute = String(date.getMinutes()).padStart(2, '0')
-  return `${year}/${month}/${day} ${hour}:${minute}`
+  if (Number.isNaN(date.getTime())) return '—'
+  return date.toLocaleString('zh-TW')
 }
 
-function statusChips(tx: Transaction) {
-  return [tx.orderStatus, tx.paymentStatus, tx.shippingStatus].filter(
-    (value): value is string => Boolean(value?.trim()),
-  )
+function formatItem(item: NonNullable<Transaction['items']>[number]) {
+  const name = item.name?.trim() || '未命名'
+  if (name === '點數增加' || name === '儲值金增加') return '點數增加'
+  if (name === '點數扣除' || name === '儲值金扣除') return '點數扣除'
+  return `${name} × ${item.quantity ?? 0}`
 }
 
 function TransactionCard({ tx }: { tx: Transaction }) {
-  const chips = statusChips(tx)
   const items = tx.items ?? []
-  const meta = [
-    tx.orderNo ? `訂單 ${tx.orderNo}` : null,
-    tx.pickupNo ? `取餐 ${tx.pickupNo}` : null,
-    formatDateTime(tx.createdAt || tx.importedAt),
-  ]
-    .filter((value): value is string => Boolean(value))
+  const branch = tx.branch?.name?.trim() || '—'
+  const status = tx.orderStatusLabel?.trim() || '已完成'
+  const paymentMethod = tx.paymentMethod?.trim()
+  const meta = [tx.txnNo?.trim(), status]
+    .filter((value): value is string => Boolean(value && value !== '—'))
     .join(' · ')
 
   return (
     <TxCard>
       <TxTop>
         <div>
-          <TxBranch>{tx.branch?.name || <PlaceholderText>門市</PlaceholderText>}</TxBranch>
+          <TxBranch>{formatDate(tx.createdAt || tx.importedAt)}</TxBranch>
           <TxMeta>{meta || '—'}</TxMeta>
         </div>
         <TxAmount>{formatMoney(tx.totalAmount)}</TxAmount>
       </TxTop>
-      {chips.length ? (
-        <TxChips>
-          {chips.map((chip) => (
-            <TxChip key={chip}>{chip}</TxChip>
-          ))}
-        </TxChips>
-      ) : null}
+      <TxChips>
+        <TxChip>{branch}</TxChip>
+        {paymentMethod ? <TxChip>{paymentMethod}</TxChip> : null}
+      </TxChips>
       {items.length ? (
         <TxItems>
           {items.map((item, index) => (
-            <TxItem key={`${item.sku || item.name}-${index}`}>
-              <span>
-                {item.name} × {item.quantity}
-              </span>
-              <span>{formatMoney(item.subtotal)}</span>
-            </TxItem>
+            <TxItem key={`${item.sku || item.name}-${index}`}>{formatItem(item)}</TxItem>
           ))}
         </TxItems>
       ) : null}
-      {tx.note?.trim() ? <TxNote>{tx.note}</TxNote> : null}
     </TxCard>
   )
 }
@@ -83,9 +70,6 @@ function TransactionsSkeleton() {
   return (
     <Dashboard>
       <Scroll aria-busy="true" aria-label="載入中">
-        <TxHeader>
-          <Skeleton $variant="title" />
-        </TxHeader>
         <TxList>
           <Skeleton $variant="wide" />
           <Skeleton $variant="wide" />
@@ -113,9 +97,7 @@ export default function TransactionsPage() {
   return (
     <Dashboard>
       <Scroll>
-        <TxHeader>
-          <TxTitle>交易紀錄</TxTitle>
-        </TxHeader>
+        <SectionTitle>交易紀錄</SectionTitle>
 
         {transactions.length ? (
           <TxList>
@@ -132,18 +114,6 @@ export default function TransactionsPage() {
     </Dashboard>
   )
 }
-
-const TxHeader = styled.header`
-  margin: 0.15rem 0 1rem;
-`
-
-const TxTitle = styled.h1`
-  margin: 0;
-  font-size: clamp(1.6rem, 6vw, 2rem);
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 1.15;
-`
 
 const TxList = styled.div`
   display: grid;
@@ -207,22 +177,7 @@ const TxItems = styled.ul`
 `
 
 const TxItem = styled.li`
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
   font-size: 0.88rem;
-
-  span:last-child {
-    flex: 0 0 auto;
-    font-weight: 650;
-  }
-`
-
-const TxNote = styled.p`
-  margin: 0.7rem 0 0;
-  color: var(--dash-muted);
-  font-size: 0.78rem;
 `
 
 const TxEmpty = styled(Card)`

@@ -9,7 +9,6 @@ import ComingSoonPage from './pages/member/ComingSoonPage'
 import CouponsPage from './pages/member/CouponsPage'
 import HomePage from './pages/member/HomePage'
 import LoginPage from './pages/member/LoginPage'
-import ProfilePage from './pages/member/ProfilePage'
 import TransactionsPage from './pages/member/TransactionsPage'
 import VipPage from './pages/member/VipPage'
 import StoreInfoPage from './pages/official/StoreInfoPage'
@@ -49,7 +48,7 @@ export default function App() {
           <Route path="/complete-profile" element={<CompleteProfilePage />} />
           <Route element={<RequireProfile />}>
             <Route path="/" element={<HomePage />} />
-            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile" element={<Navigate to="/" replace />} />
             <Route path="/transactions" element={<TransactionsPage />} />
             <Route path="/coupons" element={<CouponsPage />} />
             <Route path="/vip" element={<VipPage />} />

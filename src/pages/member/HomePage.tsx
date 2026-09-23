@@ -18,7 +18,7 @@ export default function HomePage() {
     (state) => state.userReducer.getUser,
   )
   const user = data?.user
-  const [feedInfoOpen, setFeedInfoOpen] = useState(false)
+  const [infoOpen, setInfoOpen] = useState<'feed' | 'points' | null>(null)
 
   useEffect(() => {
     if (!user && !loading && !error) {
@@ -27,15 +27,15 @@ export default function HomePage() {
   }, [dispatch, error, loading, user])
 
   useEffect(() => {
-    if (!feedInfoOpen) return
+    if (!infoOpen) return
 
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') setFeedInfoOpen(false)
+      if (event.key === 'Escape') setInfoOpen(null)
     }
 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [feedInfoOpen])
+  }, [infoOpen])
 
   if (loading || (!user && !error)) {
     return <HomeSkeleton />
@@ -49,24 +49,26 @@ export default function HomePage() {
   return (
     <Dashboard $vip={vipTheme}>
       <Scroll>
-        <UserHeader
-          user={user}
-          onProfileClick={() => navigate('/profile')}
-        />
+        <UserHeader user={user} />
 
         <Stats aria-label="會員資料">
           <StatCard
             as="button"
             type="button"
-            onClick={() => setFeedInfoOpen(true)}
+            onClick={() => setInfoOpen('feed')}
             aria-label="餌料寄杯說明"
           >
             <StatValue>{prepaidFeed}</StatValue>
             <StatLabel>餌料寄杯</StatLabel>
           </StatCard>
-          <StatCard>
+          <StatCard
+            as="button"
+            type="button"
+            onClick={() => setInfoOpen('points')}
+            aria-label="點數說明"
+          >
             <StatValue>{storedCredit}</StatValue>
-            <StatLabel>儲值金</StatLabel>
+            <StatLabel>點數</StatLabel>
           </StatCard>
           <StatCard
             as="button"
@@ -98,17 +100,6 @@ export default function HomePage() {
                 </svg>
               </FeatureIcon>
               門市資訊
-            </FeatureLink>
-            <FeatureLink type="button" onClick={() => navigate('/profile')}>
-              <FeatureIcon aria-hidden="true">
-                <svg viewBox="0 0 24 24">
-                  <path
-                    d="M12 12a3.5 3.5 0 1 0-3.5-3.5A3.5 3.5 0 0 0 12 12zm0 1.8c-3.1 0-7 1.6-7 4.2V20h14v-2c0-2.6-3.9-4.2-7-4.2z"
-                    fill="currentColor"
-                  />
-                </svg>
-              </FeatureIcon>
-              個人頁
             </FeatureLink>
             <FeatureLink type="button" onClick={() => navigate('/vip')}>
               <FeatureIcon aria-hidden="true">
@@ -198,26 +189,34 @@ export default function HomePage() {
 
       <BottomNav />
 
-      {feedInfoOpen ? (
+      {infoOpen ? (
         <>
           <ModalOverlay
             type="button"
             aria-label="關閉說明"
-            onClick={() => setFeedInfoOpen(false)}
+            onClick={() => setInfoOpen(null)}
           />
           <ModalSheet
             role="dialog"
             aria-modal="true"
-            aria-labelledby="feed-info-title"
+            aria-labelledby="info-title"
           >
-            <ModalTitle id="feed-info-title">餌料寄杯</ModalTitle>
-            <ModalBody>
-              餌料寄杯是預先存放在門市的飼料／餌料份數。到店時可直接取用，結帳會依寄杯數量扣除。
-            </ModalBody>
-            <ModalBody>
-              實際可用數量以門市系統為準；若有疑問，歡迎向店員確認。
-            </ModalBody>
-            <ModalClose type="button" onClick={() => setFeedInfoOpen(false)}>
+            <ModalTitle id="info-title">
+              {infoOpen === 'feed' ? '餌料寄杯' : '點數'}
+            </ModalTitle>
+            {infoOpen === 'feed' ? (
+              <>
+                <ModalBody>
+                  餌料寄杯是預先存放在門市的飼料／餌料份數。到店時可直接取用，結帳會依寄杯數量扣除。
+                </ModalBody>
+                <ModalBody>
+                  實際可用數量以門市系統為準；若有疑問，歡迎向店員確認。
+                </ModalBody>
+              </>
+            ) : (
+              <ModalBody>一元可以折抵一點。</ModalBody>
+            )}
+            <ModalClose type="button" onClick={() => setInfoOpen(null)}>
               知道了
             </ModalClose>
           </ModalSheet>
@@ -311,7 +310,7 @@ const FeatureLink = styled.button`
 const FeatureIcon = styled.span`
   display: grid;
   place-items: center;
-  color: var(--color-primary);
+  color: var(--color-white);
 
   svg {
     width: 2.1rem;

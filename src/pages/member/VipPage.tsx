@@ -1,10 +1,8 @@
 import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import BottomNav from '../../components/BottomNav'
-import { Card, Dashboard, Scroll, Skeleton } from '../../components/Dashboard'
-import UserHeader, { UserHeaderSkeleton } from '../../components/UserHeader'
+import { Card, Dashboard, Scroll, SectionTitle, Skeleton } from '../../components/Dashboard'
 import { useAppDispatch, useAppSelector } from '../../customHooks/useApp'
 import { getUser } from '../../redux/features/user'
 import { resolveVipTheme, type VipThemeKey } from '../../utils/vipTheme'
@@ -59,7 +57,7 @@ function VipSkeleton() {
   return (
     <Dashboard>
       <Scroll aria-busy="true" aria-label="載入中">
-        <UserHeaderSkeleton />
+        <Skeleton $variant="title" />
         <Skeleton $variant="wide" />
         <Skeleton $variant="wide" />
       </Scroll>
@@ -70,7 +68,6 @@ function VipSkeleton() {
 
 export default function VipPage() {
   const dispatch = useAppDispatch()
-  const navigate = useNavigate()
   const { data, loading, error } = useAppSelector(
     (state) => state.userReducer.getUser,
   )
@@ -91,13 +88,8 @@ export default function VipPage() {
   return (
     <Dashboard $vip={vipTheme}>
       <Scroll>
-        <UserHeader
-          user={user}
-          onProfileClick={() => navigate('/profile')}
-        />
-
+        <SectionTitle>會員規則</SectionTitle>
         <InfoCard>
-          <CardTitle>會員規則</CardTitle>
           <VipList>
             {VIP_RULES.map((vip) => (
               <VipItem key={vip.id} $theme={vip.theme}>
@@ -131,20 +123,12 @@ export default function VipPage() {
 }
 
 const InfoCard = styled(Card)`
-  margin-top: 0.85rem;
   padding: 1rem 1.1rem 1.05rem;
-`
-
-const CardTitle = styled.p`
-  margin: 0;
-  font-size: 0.95rem;
-  font-weight: 600;
 `
 
 const VipList = styled.div`
   display: grid;
   gap: 0.75rem;
-  margin-top: 0.9rem;
 `
 
 const VipItem = styled.article<{ $theme: VipThemeKey }>`

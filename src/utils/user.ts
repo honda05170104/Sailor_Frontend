@@ -68,6 +68,17 @@ export type UserProfile = {
   avatarUrl: string
   avatarSource?: 'line' | null
   vip?: VipTier | null
+  nextVip?: VipTier | null
+  spendToNext?: number
+  /** 金卡／黑卡或舊會員保護截止日；一般會員為 null */
+  vipExpiresAt?: string | null
+  vipProgress?: {
+    yearSpend?: number
+    nextVip?: VipTier | null
+    spendToNext?: number
+    vipExpiresAt?: string | null
+    goldProtectExpiresAt?: string | null
+  } | null
   prepaidFeed?: number
   storedCredit?: number
   totalSpend?: number
@@ -119,12 +130,14 @@ export type Transaction = {
   id: string
   user?: string
   branch?: TransactionBranch
+  txnNo?: string
   pickupNo?: string
   orderNo?: string
   customerName?: string
   customerMobile?: string
   source?: string
   orderStatus?: string
+  orderStatusLabel?: string
   paymentStatus?: string
   shippingStatus?: string
   tags?: string

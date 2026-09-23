@@ -12,12 +12,16 @@ function HomeIcon() {
   )
 }
 
-function ProfileIcon() {
+function StoreIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path
-        d="M12 12a3.5 3.5 0 1 0-3.5-3.5A3.5 3.5 0 0 0 12 12zm0 1.8c-3.1 0-7 1.6-7 4.2V20h14v-2c0-2.6-3.9-4.2-7-4.2z"
-        fill="currentColor"
+        d="M4.5 10.2 6 5.5h12l1.5 4.7M5 10.5V20h14v-9.5M9 20v-5h6v5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+        strokeLinecap="round"
       />
     </svg>
   )
@@ -46,11 +50,11 @@ export default function BottomNav() {
     <Nav aria-label="主要導覽">
       <NavBtn
         type="button"
-        $active={pathname === '/profile'}
-        aria-label="個人中心"
-        onClick={() => navigate('/profile')}
+        $active={pathname === '/transactions'}
+        aria-label="交易紀錄"
+        onClick={() => navigate('/transactions')}
       >
-        <ProfileIcon />
+        <ReceiptIcon />
       </NavBtn>
       <CenterBtn
         type="button"
@@ -62,11 +66,11 @@ export default function BottomNav() {
       </CenterBtn>
       <NavBtn
         type="button"
-        $active={pathname === '/transactions'}
-        aria-label="交易紀錄"
-        onClick={() => navigate('/transactions')}
+        $active={pathname === '/store'}
+        aria-label="門市資訊"
+        onClick={() => navigate('/store')}
       >
-        <ReceiptIcon />
+        <StoreIcon />
       </NavBtn>
     </Nav>
   )

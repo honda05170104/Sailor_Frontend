@@ -148,7 +148,7 @@ const CompleteStage = styled(LoginStage)`
 const CompleteTitle = styled.h1`
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(1.8rem, 5vw, 2.4rem);
+  font-size: clamp(1.6rem, 6vw, 2rem);
   font-weight: 700;
   letter-spacing: -0.04em;
   text-align: center;
