@@ -9,10 +9,60 @@ import { LoginError, LoginMain, LoginStage } from './LoginPage'
 import { peekReturnTo } from '../../utils/returnTo'
 import { isProfileIncomplete } from '../../utils/user'
 
-function todayIsoDate() {
+type BirthdayParts = {
+  year: string
+  month: string
+  day: string
+}
+
+function todayParts() {
   const now = new Date()
-  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
-  return local.toISOString().slice(0, 10)
+  return {
+    year: now.getFullYear(),
+    month: now.getMonth() + 1,
+    day: now.getDate(),
+  }
+}
+
+function todayIsoDate() {
+  const today = todayParts()
+  return `${today.year}-${pad2(today.month)}-${pad2(today.day)}`
+}
+
+function pad2(value: number) {
+  return String(value).padStart(2, '0')
+}
+
+function daysInMonth(year: number, month: number) {
+  return new Date(year, month, 0).getDate()
+}
+
+function splitBirthday(value: string): BirthdayParts {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
+  if (!match) return { year: '', month: '', day: '' }
+  return { year: match[1], month: match[2], day: match[3] }
+}
+
+function clampBirthday(parts: BirthdayParts, today: ReturnType<typeof todayParts>) {
+  const next = { ...parts }
+  if (next.year === String(today.year) && next.month && Number(next.month) > today.month) {
+    next.month = pad2(today.month)
+  }
+  if (next.year && next.month && next.day) {
+    let day = Number(next.day)
+    const maxDay = daysInMonth(Number(next.year), Number(next.month))
+    if (day > maxDay) day = maxDay
+    if (
+      next.year === String(today.year) &&
+      Number(next.month) === today.month &&
+      day > today.day
+    ) {
+      day = today.day
+    }
+    next.day = pad2(day)
+  }
+  const iso = next.year && next.month && next.day ? `${next.year}-${next.month}-${next.day}` : ''
+  return { parts: next, iso }
 }
 
 function normalizePhone(value: string) {
@@ -45,8 +95,33 @@ export default function CompleteProfilePage() {
   const loggingOut = useAppSelector((state) => state.userReducer.logout.loading)
   const [mobile, setMobile] = useState(user?.mobile ?? '')
   const [birthday, setBirthday] = useState(user?.birthday?.slice(0, 10) ?? '')
+  const [birthdayParts, setBirthdayParts] = useState(() =>
+    splitBirthday(user?.birthday?.slice(0, 10) ?? ''),
+  )
   const [formError, setFormError] = useState<string | null>(null)
-  const maxBirthday = useMemo(() => todayIsoDate(), [])
+  const today = useMemo(() => todayParts(), [])
+  const years = useMemo(() => {
+    const list: string[] = []
+    for (let year = today.year; year >= 1900; year -= 1) list.push(String(year))
+    return list
+  }, [today.year])
+  const months = useMemo(() => {
+    const max = birthdayParts.year === String(today.year) ? today.month : 12
+    return Array.from({ length: max }, (_, index) => pad2(index + 1))
+  }, [birthdayParts.year, today])
+  const days = useMemo(() => {
+    let max = 31
+    if (birthdayParts.year && birthdayParts.month) {
+      max = daysInMonth(Number(birthdayParts.year), Number(birthdayParts.month))
+      if (
+        birthdayParts.year === String(today.year) &&
+        Number(birthdayParts.month) === today.month
+      ) {
+        max = Math.min(max, today.day)
+      }
+    }
+    return Array.from({ length: max }, (_, index) => pad2(index + 1))
+  }, [birthdayParts.month, birthdayParts.year, today])
 
   useEffect(() => {
     if (!user && !getUserState.loading && !getUserState.error) {
@@ -57,8 +132,18 @@ export default function CompleteProfilePage() {
   useEffect(() => {
     if (!user) return
     setMobile((current) => current || user.mobile || '')
-    setBirthday((current) => current || user.birthday?.slice(0, 10) || '')
+    const nextBirthday = user.birthday?.slice(0, 10) || ''
+    setBirthday((current) => current || nextBirthday)
+    setBirthdayParts((current) =>
+      current.year || current.month || current.day ? current : splitBirthday(nextBirthday),
+    )
   }, [user])
+
+  function onBirthdayPart(key: keyof BirthdayParts, value: string) {
+    const next = clampBirthday({ ...birthdayParts, [key]: value }, today)
+    setBirthdayParts(next.parts)
+    setBirthday(next.iso)
+  }
 
   if (getUserState.loading && !user) {
     return (
@@ -109,18 +194,45 @@ export default function CompleteProfilePage() {
               required
             />
           </CompleteField>
-          <CompleteField>
+          <CompleteField as="div">
             <span>生日</span>
             <DateInputShell>
-              <input
-                type="date"
-                name="birthday"
-                value={birthday}
-                max={maxBirthday}
-                min="1900-01-01"
-                onChange={(event) => setBirthday(event.target.value)}
-                required
-              />
+              <select
+                aria-label="年"
+                value={birthdayParts.year}
+                onChange={(event) => onBirthdayPart('year', event.target.value)}
+              >
+                <option value="">年</option>
+                {years.map((year) => (
+                  <option key={year} value={year}>
+                    {year}年
+                  </option>
+                ))}
+              </select>
+              <select
+                aria-label="月"
+                value={birthdayParts.month}
+                onChange={(event) => onBirthdayPart('month', event.target.value)}
+              >
+                <option value="">月</option>
+                {months.map((month) => (
+                  <option key={month} value={month}>
+                    {Number(month)}月
+                  </option>
+                ))}
+              </select>
+              <select
+                aria-label="日"
+                value={birthdayParts.day}
+                onChange={(event) => onBirthdayPart('day', event.target.value)}
+              >
+                <option value="">日</option>
+                {days.map((day) => (
+                  <option key={day} value={day}>
+                    {Number(day)}日
+                  </option>
+                ))}
+              </select>
             </DateInputShell>
           </CompleteField>
           <CompleteSubmit type="submit" disabled={loading}>
@@ -199,50 +311,45 @@ const CompleteField = styled.label`
 `
 
 const DateInputShell = styled.span`
-  display: block;
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
   width: 100%;
   min-width: 0;
-  overflow: hidden;
+  min-height: 3.25rem;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 1rem;
   background: #1c1c1e;
+  color-scheme: dark;
 
   &:focus-within {
     outline: 2px solid #6cc762;
     outline-offset: 1px;
   }
 
-  input[type='date'] {
-    display: block;
+  select {
+    width: 100%;
+    min-width: 0;
     height: 3.25rem;
-    min-height: 3.25rem;
-    padding-right: 0.75rem;
+    padding: 0 0.35rem;
     border: 0;
-    border-radius: 0;
     background: transparent;
+    color: #ffffff;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: center;
+    text-align-last: center;
     appearance: none;
     -webkit-appearance: none;
-    text-align: left;
+  }
 
-    &:focus {
-      outline: none;
-    }
+  select + select {
+    border-left: 1px solid rgba(255, 255, 255, 0.12);
+  }
 
-    &::-webkit-date-and-time-value {
-      text-align: left;
-      min-height: 1.5em;
-    }
-
-    &::-webkit-datetime-edit {
-      padding: 0;
-      overflow: hidden;
-    }
-
-    &::-webkit-calendar-picker-indicator {
-      margin: 0 0 0 0.35rem;
-      filter: invert(1);
-      opacity: 0.7;
-    }
+  select:focus {
+    outline: none;
   }
 `
 

@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import styled, { css } from 'styled-components'
+import styled, { css, keyframes } from 'styled-components'
 
 import { Card, Eyebrow, PlaceholderText, Skeleton } from './Dashboard'
 import type { UserProfile } from '../utils/user'
@@ -97,6 +97,26 @@ export default function UserHeader({
   )
   const vipTheme = resolveVipTheme(user?.vip)
   const cardImage = VIP_CARD_IMAGE[vipTheme]
+  const [cardVisual, setCardVisual] = useState({
+    src: cardImage,
+    status: 'loading' as 'loading' | 'ready' | 'error',
+  })
+
+  if (cardVisual.src !== cardImage) {
+    setCardVisual({ src: cardImage, status: 'loading' })
+  }
+
+  const cardReady = cardVisual.status === 'ready'
+  const cardPending = cardVisual.status === 'loading'
+
+  const markCardReady = useCallback((node: HTMLImageElement | null) => {
+    if (!node?.complete || node.naturalWidth === 0) return
+    setCardVisual((current) =>
+      current.src === cardImage && current.status === 'ready'
+        ? current
+        : { src: cardImage, status: 'ready' },
+    )
+  }, [cardImage])
 
   useEffect(() => {
     if (!open) return
@@ -179,10 +199,27 @@ export default function UserHeader({
               </svg>
             </BarcodeClose>
             <BarcodeTitle id="member-detail-title">會員詳情</BarcodeTitle>
-            <MemberCard>
+            <MemberCard $pending={cardPending} aria-busy={cardPending}>
               <MemberCardImage
+                key={cardImage}
                 src={cardImage}
                 alt={`${vipName}會員卡`}
+                $ready={cardReady}
+                ref={markCardReady}
+                onLoad={() =>
+                  setCardVisual((current) =>
+                    current.src === cardImage && current.status === 'ready'
+                      ? current
+                      : { src: cardImage, status: 'ready' },
+                  )
+                }
+                onError={() =>
+                  setCardVisual((current) =>
+                    current.src === cardImage && current.status === 'error'
+                      ? current
+                      : { src: cardImage, status: 'error' },
+                  )
+                }
               />
               <MemberCardOverlay>
                 <CardRow>
@@ -378,24 +415,55 @@ const BarcodeTitle = styled.p`
   text-align: center;
 `
 
-const MemberCard = styled.div`
+const cardShimmer = keyframes`
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+`
+
+const MemberCard = styled.div<{ $pending: boolean }>`
   position: relative;
   margin: 0 0 0.85rem;
   overflow: hidden;
   border-radius: 0.85rem;
+  aspect-ratio: 932 / 590;
+  background: #1c1c1e;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent
+    );
+    animation: ${cardShimmer} 1.4s ease infinite;
+    opacity: ${({ $pending }) => ($pending ? 1 : 0)};
+    pointer-events: none;
+  }
 `
 
-const MemberCardImage = styled.img`
+const MemberCardImage = styled.img<{ $ready: boolean }>`
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
   object-fit: cover;
+  opacity: ${({ $ready }) => ($ready ? 1 : 0)};
+  transition: opacity 0.2s ease;
 `
 
 const MemberCardOverlay = styled.div`
   position: absolute;
   top: calc(32% + 10px);
   right: 0.85rem;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
