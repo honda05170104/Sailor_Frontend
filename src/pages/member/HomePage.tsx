@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { openAnnouncement } from '../../components/AnnouncementModal'
 import BottomNav from '../../components/BottomNav'
 import { Card, Dashboard, Scroll } from '../../components/Dashboard'
 import HomeSkeleton from '../../components/HomeSkeleton'
@@ -140,6 +141,21 @@ export default function HomePage() {
                 </svg>
               </FeatureIcon>
               交易紀錄
+            </FeatureLink>
+            <FeatureLink type="button" onClick={() => openAnnouncement()}>
+              <FeatureIcon aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M5 10.5v3h2.2l4.3 3.2V7.3L7.2 10.5H5zm8.2-2.4a4.2 4.2 0 0 1 0 7.8M15.6 6.2a7 7 0 0 1 0 11.6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </FeatureIcon>
+              公告
             </FeatureLink>
           </FeatureGrid>
         </FeatureCard>

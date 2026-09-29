@@ -5,6 +5,7 @@ import BottomNav from '../../components/BottomNav'
 import { Card, Dashboard, Scroll, SectionTitle, Skeleton } from '../../components/Dashboard'
 import { useAppDispatch, useAppSelector } from '../../customHooks/useApp'
 import { getUser, getVips } from '../../redux/features/user'
+import { getAuthToken } from '../../utils/auth'
 import { resolveVipTheme } from '../../utils/vipTheme'
 
 function normalizeVipText(value: string) {
@@ -77,18 +78,18 @@ export default function VipPage() {
   const vipState = useAppSelector((state) => state.userReducer.getVips)
   const user = userState.data?.user
   const vips = vipState.data?.vips ?? []
+  const loggedIn = Boolean(getAuthToken())
 
   useEffect(() => {
-    if (!user && !userState.loading && !userState.error) {
-      void dispatch(getUser())
-    }
-  }, [dispatch, user, userState.error, userState.loading])
+    if (!loggedIn || user || userState.loading || userState.error) return
+    void dispatch(getUser())
+  }, [dispatch, loggedIn, user, userState.error, userState.loading])
 
   useEffect(() => {
     void dispatch(getVips())
   }, [dispatch])
 
-  if ((userState.loading && !user) || (vipState.loading && !vipState.data)) {
+  if ((loggedIn && userState.loading && !user) || (vipState.loading && !vipState.data)) {
     return <VipSkeleton />
   }
 
@@ -134,7 +135,7 @@ export default function VipPage() {
             })}
           </VipList>
           <Disclaimer>
-            *水手保有修改會員各項權益之權利，最新內容請以水手官方公告或門市相關公告為準。
+            水手會員等級或資格累計辦法，本公司保有解釋及隨時變更、增加條文相關之權利，且不另行通知。
           </Disclaimer>
         </InfoCard>
       </Scroll>

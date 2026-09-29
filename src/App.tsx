@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 
+import AnnouncementModal from './components/AnnouncementModal'
 import RequireAuth from './components/RequireAuth'
 import RequireProfile from './components/RequireProfile'
 import ScrollToTop from './components/ScrollToTop'
@@ -40,9 +41,11 @@ export default function App() {
     <BrowserRouter>
       <ScrollToTop />
       <ReturnToJanitor />
+      <AnnouncementModal />
       <Routes>
         <Route path="/login" element={<LoginRoute />} />
         <Route path="/store" element={<StoreInfoPage />} />
+        <Route path="/vip" element={<VipPage />} />
 
         <Route element={<RequireAuth />}>
           <Route path="/complete-profile" element={<CompleteProfilePage />} />
@@ -51,7 +54,6 @@ export default function App() {
             <Route path="/profile" element={<Navigate to="/" replace />} />
             <Route path="/transactions" element={<TransactionsPage />} />
             <Route path="/coupons" element={<CouponsPage />} />
-            <Route path="/vip" element={<VipPage />} />
             <Route
               path="/order-mice"
               element={<ComingSoonPage title="訂購老鼠" />}
