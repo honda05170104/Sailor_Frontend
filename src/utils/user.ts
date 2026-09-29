@@ -10,6 +10,7 @@ export type VipTier = {
   pointsRate?: number
   discountPercent: number
   description?: string
+  benefits?: string[]
   createdAt?: string
   updatedAt?: string
 }
@@ -72,11 +73,14 @@ export type UserProfile = {
   spendToNext?: number
   /** 金卡／黑卡或舊會員保護截止日；一般會員為 null */
   vipExpiresAt?: string | null
+  /** 會員效期無限；為 true 時 vipExpiresAt 為 null */
+  vipExpiresForever?: boolean
   vipProgress?: {
     yearSpend?: number
     nextVip?: VipTier | null
     spendToNext?: number
     vipExpiresAt?: string | null
+    vipExpiresForever?: boolean
     goldProtectExpiresAt?: string | null
   } | null
   prepaidFeed?: number
@@ -240,9 +244,8 @@ export function getTransactionsApi() {
 }
 
 export function getVipsApi() {
-  return requestJson<GetVipsResponse>(getEndpoint('/getVip'), {
+  return requestJson<GetVipsResponse>(`${API_BASE_URL}/api/v1/vips`, {
     method: 'GET',
-    auth: true,
     errorMessage: '取得會員權益失敗',
   })
 }

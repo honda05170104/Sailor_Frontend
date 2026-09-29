@@ -4,56 +4,59 @@ import styled from 'styled-components'
 import BottomNav from '../../components/BottomNav'
 import { Card, Dashboard, Scroll, SectionTitle, Skeleton } from '../../components/Dashboard'
 import { useAppDispatch, useAppSelector } from '../../customHooks/useApp'
-import { getUser } from '../../redux/features/user'
-import { resolveVipTheme, type VipThemeKey } from '../../utils/vipTheme'
+import { getUser, getVips } from '../../redux/features/user'
+import { resolveVipTheme } from '../../utils/vipTheme'
 
-type VipRule = {
-  id: string
-  name: string
-  theme: VipThemeKey
-  requirement: string
-  notes?: string[]
-  benefits: string[]
+function normalizeVipText(value: string) {
+  return value.replace(/[。．.]/g, '').replace(/\s+/g, '').trim()
 }
 
-const VIP_RULES: VipRule[] = [
-  {
-    id: 'general',
-    name: '一般會員',
-    theme: 'bronze',
-    requirement: '註冊即贈送 $50 優惠券',
-    benefits: [],
-  },
-  {
-    id: 'gold',
-    name: '金卡',
-    theme: 'gold',
-    requirement: '累積消費一年內 $3,500',
-    notes: ['舊會員（已消費滿 $100）：三年內不會降級'],
-    benefits: [
-      '用品類 85 折（活體、餌料、缸除外）',
-      '單筆消費滿 $300 現金回饋 $1',
-      '升等禮 $100 優惠券',
-      '生日禮 $100 優惠券',
-      '寄宿動物一天折 $50',
-    ],
-  },
-  {
-    id: 'black',
-    name: '黑卡',
-    theme: 'black',
-    requirement: '累積消費一年內 $12,000',
-    benefits: [
-      '用品類 75 折（活體、餌料、缸除外）',
-      '生日禮 $500 優惠券',
-      '單筆消費滿 $200 現金回饋 $1',
-      '升等禮 $300 優惠券',
-      '寄宿動物免費',
-      '黑卡專屬社群',
-      '不定期提供品牌活動',
-    ],
-  },
-]
+function splitTrailingPunctuation(value: string) {
+  const match = /^(.*?)([.,。、，；;：:！!？?）)】\]]+)$/u.exec(value)
+  if (!match) return { href: value, trailing: '' }
+  return { href: match[1], trailing: match[2] }
+}
+
+function linkParts(text: string) {
+  const parts: Array<{ text: string; href?: string }> = []
+  let cursor = 0
+
+  for (const match of text.matchAll(/https?:\/\/[^\s<>"']+/gi)) {
+    const raw = match[0]
+    const index = match.index ?? 0
+    if (index > cursor) parts.push({ text: text.slice(cursor, index) })
+
+    const { href, trailing } = splitTrailingPunctuation(raw)
+    try {
+      const url = new URL(href)
+      if (url.protocol === 'http:' || url.protocol === 'https:') {
+        parts.push({ text: href, href })
+        if (trailing) parts.push({ text: trailing })
+      } else {
+        parts.push({ text: raw })
+      }
+    } catch {
+      parts.push({ text: raw })
+    }
+
+    cursor = index + raw.length
+  }
+
+  if (cursor < text.length) parts.push({ text: text.slice(cursor) })
+  return parts
+}
+
+function LinkifiedText({ text }: { text: string }) {
+  return linkParts(text).map((part, index) =>
+    part.href ? (
+      <TextLink key={`${part.href}-${index}`} href={part.href} target="_blank" rel="noopener noreferrer">
+        {part.text}
+      </TextLink>
+    ) : (
+      <span key={`${part.text}-${index}`}>{part.text}</span>
+    ),
+  )
+}
 
 function VipSkeleton() {
   return (
@@ -70,18 +73,22 @@ function VipSkeleton() {
 
 export default function VipPage() {
   const dispatch = useAppDispatch()
-  const { data, loading, error } = useAppSelector(
-    (state) => state.userReducer.getUser,
-  )
-  const user = data?.user
+  const userState = useAppSelector((state) => state.userReducer.getUser)
+  const vipState = useAppSelector((state) => state.userReducer.getVips)
+  const user = userState.data?.user
+  const vips = vipState.data?.vips ?? []
 
   useEffect(() => {
-    if (!user && !loading && !error) {
+    if (!user && !userState.loading && !userState.error) {
       void dispatch(getUser())
     }
-  }, [dispatch, error, loading, user])
+  }, [dispatch, user, userState.error, userState.loading])
 
-  if (loading || (!user && !error)) {
+  useEffect(() => {
+    void dispatch(getVips())
+  }, [dispatch])
+
+  if ((userState.loading && !user) || (vipState.loading && !vipState.data)) {
     return <VipSkeleton />
   }
 
@@ -92,26 +99,39 @@ export default function VipPage() {
       <Scroll>
         <SectionTitle>會員規則</SectionTitle>
         <InfoCard>
+          <StoreNotice>目前僅適用台北大同店</StoreNotice>
+          {vipState.error ? <VipItemMeta>{vipState.error}</VipItemMeta> : null}
           <VipList>
-            {VIP_RULES.map((vip) => (
-              <VipItem key={vip.id} $theme={vip.theme}>
-                <VipItemName>{vip.name}</VipItemName>
-                <VipItemMeta>{vip.requirement}</VipItemMeta>
-                {vip.notes?.map((note) => (
-                  <VipItemNote key={note}>{note}</VipItemNote>
-                ))}
-                {vip.benefits.length ? (
-                  <BenefitList>
-                    {vip.benefits.map((benefit, index) => (
-                      <li key={benefit}>
-                        <BenefitIndex>{index + 1}.</BenefitIndex>
-                        <span>{benefit}</span>
-                      </li>
-                    ))}
-                  </BenefitList>
-                ) : null}
-              </VipItem>
-            ))}
+            {vips.map((vip) => {
+              const description = vip.description?.trim()
+              const descriptionKey = description ? normalizeVipText(description) : ''
+              const benefits = (vip.benefits ?? []).filter(
+                (benefit) => normalizeVipText(benefit) !== descriptionKey,
+              )
+
+              return (
+                <VipItem key={vip.id}>
+                  <VipItemName>{vip.name}</VipItemName>
+                  {description ? (
+                    <VipItemMeta>
+                      <LinkifiedText text={description} />
+                    </VipItemMeta>
+                  ) : null}
+                  {benefits.length ? (
+                    <BenefitList>
+                      {benefits.map((benefit, index) => (
+                        <li key={benefit}>
+                          <BenefitIndex>{index + 1}.</BenefitIndex>
+                          <span>
+                            <LinkifiedText text={benefit} />
+                          </span>
+                        </li>
+                      ))}
+                    </BenefitList>
+                  ) : null}
+                </VipItem>
+              )
+            })}
           </VipList>
           <Disclaimer>
             *水手保有修改會員各項權益之權利，最新內容請以水手官方公告或門市相關公告為準。
@@ -133,17 +153,11 @@ const VipList = styled.div`
   gap: 0.75rem;
 `
 
-const VipItem = styled.article<{ $theme: VipThemeKey }>`
+const VipItem = styled.article`
   padding: 0.85rem 0.9rem;
   border-radius: 1rem;
   background: rgba(255, 255, 255, 0.04);
-  border-left: 3px solid
-    ${({ $theme }) =>
-      $theme === 'gold'
-        ? '#c9a227'
-        : $theme === 'black'
-          ? '#f0f0f0'
-          : '#b87333'};
+  border-left: 3px solid var(--color-glass-border);
 `
 
 const VipItemName = styled.p`
@@ -158,13 +172,6 @@ const VipItemMeta = styled.p`
   color: var(--dash-muted);
   font-size: 0.86rem;
   line-height: 1.4;
-`
-
-const VipItemNote = styled.p`
-  margin: 0.3rem 0 0;
-  color: var(--dash-muted);
-  font-size: 0.82rem;
-  line-height: 1.45;
 `
 
 const BenefitList = styled.ol`
@@ -182,10 +189,24 @@ const BenefitList = styled.ol`
   }
 `
 
+const TextLink = styled.a`
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  overflow-wrap: anywhere;
+`
+
 const BenefitIndex = styled.span`
   flex: 0 0 auto;
   color: var(--dash-muted);
   font-weight: 650;
+`
+
+const StoreNotice = styled.p`
+  margin: 0 0 0.85rem;
+  color: var(--dash-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
 `
 
 const Disclaimer = styled.p`

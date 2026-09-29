@@ -41,6 +41,12 @@ function formatVipExpiry(value?: string | null) {
   return `${year}/${month}/${day}`
 }
 
+function resolveVipExpiry(user?: UserProfile | null) {
+  const forever = user?.vipExpiresForever ?? user?.vipProgress?.vipExpiresForever
+  if (forever) return '無限'
+  return formatVipExpiry(user?.vipExpiresAt ?? user?.vipProgress?.vipExpiresAt)
+}
+
 function formatBirthday(value?: string) {
   if (!value?.trim()) return null
   const date = value.slice(0, 10)
@@ -92,9 +98,7 @@ export default function UserHeader({
   const vipName = user?.vip?.name?.trim() || '銅卡'
   const nextVipName = user?.nextVip?.name?.trim()
   const spendToNext = (user?.spendToNext ?? 0).toLocaleString()
-  const vipExpiry = formatVipExpiry(
-    user?.vipExpiresAt ?? user?.vipProgress?.vipExpiresAt,
-  )
+  const vipExpiry = resolveVipExpiry(user)
   const vipTheme = resolveVipTheme(user?.vip)
   const cardImage = VIP_CARD_IMAGE[vipTheme]
   const [cardVisual, setCardVisual] = useState({
