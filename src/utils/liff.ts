@@ -45,3 +45,35 @@ export async function initLiff() {
 
   restoreLiffState()
 }
+
+export function isLiffInClient() {
+  if (!LIFF_ID) return false
+  if (
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1'
+  ) {
+    return false
+  }
+
+  try {
+    return liff.isInClient()
+  } catch {
+    return false
+  }
+}
+
+/** Inside the LINE app, return the current access token or start LINE login. */
+export function consumeLiffAccessToken(): string | 'redirecting' | 'outside' {
+  if (!isLiffInClient()) return 'outside'
+
+  try {
+    if (!liff.isLoggedIn()) {
+      liff.login()
+      return 'redirecting'
+    }
+
+    return liff.getAccessToken() || 'outside'
+  } catch {
+    return 'outside'
+  }
+}

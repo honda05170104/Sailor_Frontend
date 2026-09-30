@@ -1,8 +1,10 @@
-import { useEffect, useState, type MouseEvent } from 'react'
+import { useEffect, useRef, useState, type MouseEvent } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import styled, { keyframes } from 'styled-components'
 
 const ANNOUNCEMENT_KEY = 'sailor_announcement_2024_10_05'
 const ANNOUNCEMENT_INTERVAL = 24 * 60 * 60 * 1000
+const LOGIN_PATH = '/login'
 const openListeners = new Set<() => void>()
 
 export function openAnnouncement() {
@@ -27,14 +29,27 @@ function markAnnouncementShown(): void {
 }
 
 export default function AnnouncementModal({ onClose }: AnnouncementModalProps) {
+  const navigate = useNavigate()
+  const location = useLocation()
   const [isVisible, setIsVisible] = useState(false)
+  const isLoginPage = location.pathname === LOGIN_PATH
+  const isLoginPageRef = useRef(isLoginPage)
+  isLoginPageRef.current = isLoginPage
 
   useEffect(() => {
+    if (isLoginPage) {
+      setIsVisible(false)
+      return
+    }
+
     if (shouldShowAnnouncement()) {
       setIsVisible(true)
     }
+  }, [isLoginPage])
 
+  useEffect(() => {
     function show() {
+      if (isLoginPageRef.current) return
       setIsVisible(true)
     }
 
@@ -48,6 +63,11 @@ export default function AnnouncementModal({ onClose }: AnnouncementModalProps) {
     setIsVisible(false)
     markAnnouncementShown()
     onClose?.()
+  }
+
+  const openVip = () => {
+    handleClose()
+    navigate('/vip')
   }
 
   const handleOverlayClick = (event: MouseEvent<HTMLDivElement>) => {
@@ -98,6 +118,12 @@ export default function AnnouncementModal({ onClose }: AnnouncementModalProps) {
             <NoteList>
               <Note>本活動與會員系統目前僅適用台北店</Note>
               <Note>舊會員免費轉換權益至 12/31 止</Note>
+              <Note>
+                各等級詳細內容請見
+                <BenefitsLink type="button" onClick={openVip}>
+                  會員權益
+                </BenefitsLink>
+              </Note>
             </NoteList>
           </Section>
         </Content>
@@ -246,6 +272,19 @@ const Note = styled.li`
   font-size: 0.85rem;
   line-height: 1.4;
   color: var(--color-muted);
+`
+
+const BenefitsLink = styled.button`
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-white);
+  font: inherit;
+  font-size: inherit;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
 `
 
 const ActionButton = styled.button`

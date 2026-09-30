@@ -16,6 +16,7 @@ export default function HomeSkeleton() {
         </Stats>
         <Skeleton $variant="wide" />
         <Skeleton $variant="wide" />
+        <Skeleton $variant="wide" />
       </Scroll>
       <BottomNav />
     </Dashboard>

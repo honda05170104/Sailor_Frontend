@@ -70,13 +70,18 @@ function toRejectMessage(error: unknown, fallback: string) {
   return fallback;
 }
 
+type LineLoginInput = LineLoginPayload | { accessToken: string };
+
 export const lineLogin = createAsyncThunk<
   LoginWithLineResponse,
-  LineLoginPayload,
+  LineLoginInput,
   { rejectValue: string }
 >("user/lineLogin", async (payload, { rejectWithValue }) => {
   try {
-    const accessToken = await exchangeLineAccessToken(payload);
+    const accessToken =
+      "accessToken" in payload
+        ? payload.accessToken
+        : await exchangeLineAccessToken(payload);
     const loginData = await loginWithLineApi(accessToken);
     const userData = await getUserApi();
     if (!userData?.user) {

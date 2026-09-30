@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import styled, { keyframes } from 'styled-components'
 
@@ -11,6 +11,7 @@ import {
   startLineLogin,
   takeLineLoginCallback,
 } from '../../utils/lineAuth'
+import { consumeLiffAccessToken, isLiffInClient } from '../../utils/liff'
 import { getPostAuthPath } from '../../utils/returnTo'
 
 const rise = keyframes`
@@ -32,6 +33,8 @@ export default function LoginPage() {
     (state) => state.userReducer.lineLogin,
   )
   const [oauthError, setOauthError] = useState<string | null>(null)
+  const inLineApp = isLiffInClient()
+  const liffStarted = useRef(false)
   const configured = hasLineChannelId()
   const callbackParams = new URLSearchParams(location.search)
   const hasCallback = callbackParams.has('code') || callbackParams.has('error')
@@ -67,6 +70,23 @@ export default function LoginPage() {
     }
   }, [data, dispatch, location.search, navigate])
 
+  useEffect(() => {
+    if (liffStarted.current || data || hasCallback || !inLineApp) return
+
+    const accessToken = consumeLiffAccessToken()
+    if (accessToken === 'redirecting') {
+      liffStarted.current = true
+      return
+    }
+    if (accessToken === 'outside') {
+      setOauthError('無法取得 LINE 登入狀態，請再按一次登入')
+      return
+    }
+
+    liffStarted.current = true
+    dispatch(lineLogin({ accessToken }))
+  }, [data, dispatch, hasCallback, inLineApp])
+
   function onLogin() {
     if (!configured) return
     setOauthError(null)
@@ -79,13 +99,17 @@ export default function LoginPage() {
     <LoginMain>
       <LoginStage>
         <LoginLogo src="/logo.png" alt="水手" width={288} height={288} />
-        <LineButton type="button" onClick={onLogin} disabled={busy || !configured}>
-          <LineBadge aria-hidden="true">
-            <LineLogo src="/line-login.png" alt="" />
-          </LineBadge>
-          <LineText>{busy ? '登入中…' : '登入 / 註冊'}</LineText>
-          <LineSpacer aria-hidden="true" />
-        </LineButton>
+        {inLineApp && !displayError ? (
+          <LoginStatus>登入中…</LoginStatus>
+        ) : (
+          <LineButton type="button" onClick={onLogin} disabled={busy || !configured}>
+            <LineBadge aria-hidden="true">
+              <LineLogo src="/line-login.png" alt="" />
+            </LineBadge>
+            <LineText>{busy ? '登入中…' : '登入 / 註冊'}</LineText>
+            <LineSpacer aria-hidden="true" />
+          </LineButton>
+        )}
         {!configured ? <LoginError>尚未設定 VITE_LINE_CHANNEL_ID</LoginError> : null}
         {displayError ? <LoginError>{displayError}</LoginError> : null}
       </LoginStage>
@@ -120,6 +144,13 @@ const LoginLogo = styled.img`
   width: min(72vw, 18rem);
   height: auto;
   margin: 0 0 1.25rem;
+`
+
+const LoginStatus = styled.p`
+  margin: 2rem 0 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 1rem;
+  font-weight: 600;
 `
 
 const LineButton = styled.button`
