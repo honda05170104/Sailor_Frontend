@@ -3,8 +3,42 @@ import { requestJson } from './api'
 const CHANNEL_ID = import.meta.env.VITE_LINE_CHANNEL_ID?.trim() || ''
 const STATE_KEY = 'line_oauth_state'
 const VERIFIER_KEY = 'line_oauth_verifier'
+const ATTEMPT_KEY = 'line_oauth_attempt'
+const ATTEMPT_TTL_MS = 10 * 60 * 1000
 const PENDING_KEY = 'line_oauth_pending'
 const CONSUMED_KEY = 'line_oauth_consumed'
+
+type LineLoginAttempt = {
+  state: string
+  verifier: string
+  createdAt: number
+}
+
+// localStorage, because LINE app-to-app login returns to the browser in a new tab.
+function saveAttempt(attempt: LineLoginAttempt) {
+  localStorage.setItem(ATTEMPT_KEY, JSON.stringify(attempt))
+}
+
+function readAttempt(): LineLoginAttempt | null {
+  const raw = localStorage.getItem(ATTEMPT_KEY)
+  if (!raw) return null
+
+  try {
+    const parsed = JSON.parse(raw) as LineLoginAttempt
+    if (!parsed?.state || !parsed?.verifier) throw new Error('invalid')
+    if (Date.now() - parsed.createdAt > ATTEMPT_TTL_MS) throw new Error('expired')
+    return parsed
+  } catch {
+    localStorage.removeItem(ATTEMPT_KEY)
+    return null
+  }
+}
+
+function clearAttempt() {
+  localStorage.removeItem(ATTEMPT_KEY)
+  sessionStorage.removeItem(STATE_KEY)
+  sessionStorage.removeItem(VERIFIER_KEY)
+}
 
 export function hasLineChannelId() {
   return Boolean(CHANNEL_ID)
@@ -40,8 +74,7 @@ export async function startLineLogin() {
 
   const state = crypto.randomUUID()
   const { verifier, challenge } = await createPkce()
-  sessionStorage.setItem(STATE_KEY, state)
-  sessionStorage.setItem(VERIFIER_KEY, verifier)
+  saveAttempt({ state, verifier, createdAt: Date.now() })
 
   const url = new URL('https://access.line.me/oauth2/v2.1/authorize')
   url.searchParams.set('response_type', 'code')
@@ -51,8 +84,23 @@ export async function startLineLogin() {
   url.searchParams.set('scope', 'profile openid')
   url.searchParams.set('code_challenge', challenge)
   url.searchParams.set('code_challenge_method', 'S256')
+  // Always set this. Inside LINE the app ignores it. If the user then chooses
+  // "open in external browser", access.line.me is a universal link and would
+  // reopen the LINE app, bouncing until login fails.
+  url.searchParams.set('disable_auto_login', 'true')
 
   window.location.assign(url.toString())
+}
+
+/** OAuth code that belongs to another browser, so this session has no PKCE verifier. */
+export function isUnownedLineCallback(params: URLSearchParams) {
+  const code = params.get('code')
+  if (!code) return false
+
+  const pending = readPending()
+  if (pending?.code === code) return false
+
+  return readAttempt()?.state !== params.get('state')
 }
 
 export type LineLoginPayload = {
@@ -91,15 +139,14 @@ export function takeLineLoginCallback(params: URLSearchParams): LineLoginPayload
     const alreadySaved = pending?.code === code
 
     if (!alreadySaved) {
-      const savedState = sessionStorage.getItem(STATE_KEY)
-      const codeVerifier = sessionStorage.getItem(VERIFIER_KEY)
-      if (!savedState || savedState !== state || !codeVerifier) {
+      const attempt = readAttempt()
+      if (!attempt || attempt.state !== state) {
         clearLineLoginCallback()
         throw new Error('LINE 登入驗證失敗，請再試一次')
       }
 
-      sessionStorage.removeItem(STATE_KEY)
-      sessionStorage.removeItem(VERIFIER_KEY)
+      const codeVerifier = attempt.verifier
+      clearAttempt()
       sessionStorage.setItem(
         PENDING_KEY,
         JSON.stringify({
@@ -143,7 +190,6 @@ export async function exchangeLineAccessToken(payload: LineLoginPayload) {
 
 export function clearLineLoginCallback() {
   sessionStorage.removeItem(PENDING_KEY)
-  sessionStorage.removeItem(STATE_KEY)
-  sessionStorage.removeItem(VERIFIER_KEY)
   sessionStorage.removeItem(CONSUMED_KEY)
+  clearAttempt()
 }

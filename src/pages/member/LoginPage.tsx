@@ -8,10 +8,11 @@ import { isProfileIncomplete } from '../../utils/user'
 import {
   clearLineLoginCallback,
   hasLineChannelId,
+  isUnownedLineCallback,
   startLineLogin,
   takeLineLoginCallback,
 } from '../../utils/lineAuth'
-import { consumeLiffAccessToken, isLiffInClient } from '../../utils/liff'
+import { consumeLiffAccessToken, isLiffInClient, suppressLiffLoginRedirect } from '../../utils/liff'
 import { getPostAuthPath } from '../../utils/returnTo'
 
 const rise = keyframes`
@@ -60,6 +61,12 @@ export default function LoginPage() {
     const params = new URLSearchParams(location.search)
     if (!params.has('code') && !params.has('error')) return
 
+    if (inLineApp && isUnownedLineCallback(params)) {
+      suppressLiffLoginRedirect()
+      navigate('/login', { replace: true })
+      return
+    }
+
     try {
       const payload = takeLineLoginCallback(params)
       navigate('/login', { replace: true })
@@ -68,14 +75,28 @@ export default function LoginPage() {
       navigate('/login', { replace: true })
       setOauthError(err instanceof Error ? err.message : 'LINE 登入失敗')
     }
-  }, [data, dispatch, location.search, navigate])
+  }, [data, dispatch, inLineApp, location.search, navigate])
 
   useEffect(() => {
-    if (liffStarted.current || data || hasCallback || !inLineApp) return
+    if (
+      liffStarted.current ||
+      data ||
+      loading ||
+      error ||
+      oauthError ||
+      hasCallback ||
+      !inLineApp
+    ) {
+      return
+    }
 
     const accessToken = consumeLiffAccessToken()
-    if (accessToken === 'redirecting') {
+    if (accessToken === 'login') {
+      if (!configured) return
       liffStarted.current = true
+      void startLineLogin().catch((err) => {
+        setOauthError(err instanceof Error ? err.message : 'LINE 登入失敗')
+      })
       return
     }
     if (accessToken === 'outside') {
@@ -85,7 +106,7 @@ export default function LoginPage() {
 
     liffStarted.current = true
     dispatch(lineLogin({ accessToken }))
-  }, [data, dispatch, hasCallback, inLineApp])
+  }, [configured, data, dispatch, error, hasCallback, inLineApp, loading, oauthError])
 
   function onLogin() {
     if (!configured) return
