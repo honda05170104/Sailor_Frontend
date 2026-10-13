@@ -21,40 +21,35 @@ export type UserTag = {
   slug?: string
 }
 
-export type Product = {
+export type SpeciesOption = {
   id: string
   name: string
-  description?: string
-  categoryId?: string | null
-  category?: {
-    id?: string
-    name?: string
-    enabled?: boolean
-  } | null
-  enabled?: boolean
-  sort?: number
 }
 
-export type ProductCategory = {
+export type SpeciesGroup = {
   id: string
   name: string
-  description?: string
-  enabled?: boolean
-  sort?: number
-  products?: Product[]
+  options: SpeciesOption[]
 }
 
-export type GetProductsResponse = {
-  categories: ProductCategory[]
-  products: Product[]
-  productIds: string[]
+export type GetSpeciesResponse = {
+  groups: SpeciesGroup[]
 }
 
-export type UpdateProductsPayload = {
-  productIds: string[]
+export type InterestedSpecies = {
+  id: string
+  name: string
+  parentId?: string | null
+  parentName?: string
 }
 
-export type UpdateProductsResponse = {
+export type UpdateSpeciesPayload = {
+  speciesIds: string[]
+  /** Free text for species not in the list; empty string when blank. */
+  other: string
+}
+
+export type UpdateSpeciesResponse = {
   user: UserProfile
 }
 
@@ -88,7 +83,10 @@ export type UserProfile = {
   totalSpend?: number
   couponCount?: number
   tags?: UserTag[]
-  products?: Product[]
+  interestedSpecies?: InterestedSpecies[]
+  otherSpecies?: string
+  /** True once the species form is submitted, even with nothing selected. */
+  speciesFormFilled?: boolean
   profileCompleteness?: {
     isComplete: boolean
     missing: string[]
@@ -258,16 +256,15 @@ export function getCouponsApi() {
   })
 }
 
-export function getProductsApi() {
-  return requestJson<GetProductsResponse>(getEndpoint('/products'), {
+export function getSpeciesApi() {
+  return requestJson<GetSpeciesResponse>(`${API_BASE_URL}/api/v1/species`, {
     method: 'GET',
-    auth: true,
     errorMessage: '取得物種失敗',
   })
 }
 
-export function updateProductsApi(payload: UpdateProductsPayload) {
-  return requestJson<UpdateProductsResponse>(getEndpoint('/products'), {
+export function updateSpeciesApi(payload: UpdateSpeciesPayload) {
+  return requestJson<UpdateSpeciesResponse>(getEndpoint('/updateSpecies'), {
     method: 'POST',
     auth: true,
     body: JSON.stringify(payload),

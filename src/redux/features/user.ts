@@ -9,22 +9,22 @@ import {
 } from "../../utils/lineAuth";
 import {
   getCouponsApi,
-  getProductsApi,
+  getSpeciesApi,
   getTransactionsApi,
   getUserApi,
   getVipsApi,
   loginWithLineApi,
   logoutApi,
-  updateProductsApi,
+  updateSpeciesApi,
   updateUserApi,
   type GetCouponsResponse,
-  type GetProductsResponse,
+  type GetSpeciesResponse,
   type GetTransactionsResponse,
   type GetUserResponse,
   type GetVipsResponse,
   type LoginWithLineResponse,
-  type UpdateProductsPayload,
-  type UpdateProductsResponse,
+  type UpdateSpeciesPayload,
+  type UpdateSpeciesResponse,
   type UpdateUserPayload,
 } from "../../utils/user";
 
@@ -40,9 +40,9 @@ type UserState = {
   getTransactions: ApiState<GetTransactionsResponse>;
   getVips: ApiState<GetVipsResponse>;
   getCoupons: ApiState<GetCouponsResponse>;
-  getProducts: ApiState<GetProductsResponse>;
+  getSpecies: ApiState<GetSpeciesResponse>;
   updateProfile: ApiState<GetUserResponse>;
-  updateProducts: ApiState<UpdateProductsResponse>;
+  updateSpecies: ApiState<UpdateSpeciesResponse>;
   logout: ApiState<null>;
 };
 
@@ -58,9 +58,9 @@ const initialState: UserState = {
   getTransactions: { ...initialApiState },
   getVips: { ...initialApiState },
   getCoupons: { ...initialApiState },
-  getProducts: { ...initialApiState },
+  getSpecies: { ...initialApiState },
   updateProfile: { ...initialApiState },
-  updateProducts: { ...initialApiState },
+  updateSpecies: { ...initialApiState },
   logout: { ...initialApiState },
 };
 
@@ -168,30 +168,26 @@ export const getCoupons = createAsyncThunk<
   }
 });
 
-export const getProducts = createAsyncThunk<
-  GetProductsResponse,
+export const getSpecies = createAsyncThunk<
+  GetSpeciesResponse,
   void,
   { rejectValue: string }
->("user/getProducts", async (_, { rejectWithValue }) => {
+>("user/getSpecies", async (_, { rejectWithValue }) => {
   try {
-    const data = await getProductsApi();
-    return {
-      categories: data?.categories ?? [],
-      products: data?.products ?? [],
-      productIds: (data?.productIds ?? []).map(String),
-    };
+    const data = await getSpeciesApi();
+    return { groups: data?.groups ?? [] };
   } catch (error) {
     return rejectWithValue(toRejectMessage(error, "取得物種失敗"));
   }
 });
 
-export const updateProducts = createAsyncThunk<
-  UpdateProductsResponse,
-  UpdateProductsPayload,
+export const updateSpecies = createAsyncThunk<
+  UpdateSpeciesResponse,
+  UpdateSpeciesPayload,
   { rejectValue: string }
->("user/updateProducts", async (payload, { rejectWithValue }) => {
+>("user/updateSpecies", async (payload, { rejectWithValue }) => {
   try {
-    const data = await updateProductsApi(payload);
+    const data = await updateSpeciesApi(payload);
     if (!data?.user) {
       return rejectWithValue("儲存喜歡的物種失敗");
     }
@@ -303,38 +299,32 @@ const userSlice = createSlice({
         state.getCoupons.error =
           action.payload ?? action.error.message ?? "取得優惠券失敗";
       })
-      .addCase(getProducts.pending, (state) => {
-        state.getProducts.loading = true;
-        state.getProducts.error = null;
+      .addCase(getSpecies.pending, (state) => {
+        state.getSpecies.loading = true;
+        state.getSpecies.error = null;
       })
-      .addCase(getProducts.fulfilled, (state, action) => {
-        state.getProducts.loading = false;
-        state.getProducts.data = action.payload;
+      .addCase(getSpecies.fulfilled, (state, action) => {
+        state.getSpecies.loading = false;
+        state.getSpecies.data = action.payload;
       })
-      .addCase(getProducts.rejected, (state, action) => {
-        state.getProducts.loading = false;
-        state.getProducts.data = { categories: [], products: [], productIds: [] };
-        state.getProducts.error =
+      .addCase(getSpecies.rejected, (state, action) => {
+        state.getSpecies.loading = false;
+        state.getSpecies.data = { groups: [] };
+        state.getSpecies.error =
           action.payload ?? action.error.message ?? "取得物種失敗";
       })
-      .addCase(updateProducts.pending, (state) => {
-        state.updateProducts.loading = true;
-        state.updateProducts.error = null;
+      .addCase(updateSpecies.pending, (state) => {
+        state.updateSpecies.loading = true;
+        state.updateSpecies.error = null;
       })
-      .addCase(updateProducts.fulfilled, (state, action) => {
-        state.updateProducts.loading = false;
-        state.updateProducts.data = action.payload;
+      .addCase(updateSpecies.fulfilled, (state, action) => {
+        state.updateSpecies.loading = false;
+        state.updateSpecies.data = action.payload;
         state.getUser.data = {
           ...(state.getUser.data ?? { user: action.payload.user }),
           user: action.payload.user,
         };
         state.getUser.error = null;
-        const productIds = (action.payload.user.products ?? []).map((item) =>
-          String(item.id),
-        );
-        if (state.getProducts.data) {
-          state.getProducts.data.productIds = productIds;
-        }
         if (state.lineLogin.data) {
           state.lineLogin.data = {
             ...state.lineLogin.data,
@@ -342,9 +332,9 @@ const userSlice = createSlice({
           };
         }
       })
-      .addCase(updateProducts.rejected, (state, action) => {
-        state.updateProducts.loading = false;
-        state.updateProducts.error =
+      .addCase(updateSpecies.rejected, (state, action) => {
+        state.updateSpecies.loading = false;
+        state.updateSpecies.error =
           action.payload ?? action.error.message ?? "儲存喜歡的物種失敗";
       })
       .addCase(updateProfile.pending, (state) => {
@@ -381,9 +371,9 @@ const userSlice = createSlice({
         state.getTransactions = { ...initialApiState };
         state.getVips = { ...initialApiState };
         state.getCoupons = { ...initialApiState };
-        state.getProducts = { ...initialApiState };
+        state.getSpecies = { ...initialApiState };
         state.updateProfile = { ...initialApiState };
-        state.updateProducts = { ...initialApiState };
+        state.updateSpecies = { ...initialApiState };
       })
       .addCase(logout.rejected, (state, action) => {
         state.logout.loading = false;

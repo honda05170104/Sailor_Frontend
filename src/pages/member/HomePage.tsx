@@ -5,6 +5,7 @@ import styled from 'styled-components'
 import AnnouncementCarousel from '../../components/AnnouncementCarousel'
 import BottomNav from '../../components/BottomNav'
 import { Card, Dashboard, Scroll } from '../../components/Dashboard'
+import FavoriteSpeciesModal from '../../components/FavoriteSpeciesModal'
 import HomeSkeleton from '../../components/HomeSkeleton'
 import StoreEventsCarousel from '../../components/StoreEventsCarousel'
 import UserHeader from '../../components/UserHeader'
@@ -20,6 +21,7 @@ export default function HomePage() {
   )
   const user = data?.user
   const [infoOpen, setInfoOpen] = useState<'feed' | 'points' | null>(null)
+  const [speciesOpen, setSpeciesOpen] = useState(false)
 
   useEffect(() => {
     if (!user && !loading && !error) {
@@ -46,7 +48,6 @@ export default function HomePage() {
   const prepaidFeed = (user?.prepaidFeed ?? 0).toLocaleString()
   const storedCredit = (user?.storedCredit ?? 0).toLocaleString()
   const coupons = (user?.couponCount ?? 0).toLocaleString()
-
   return (
     <Dashboard $vip={vipTheme}>
       <Scroll>
@@ -81,6 +82,16 @@ export default function HomePage() {
             <StatLabel>優惠券</StatLabel>
           </StatCard>
         </Stats>
+
+        {!user?.speciesFormFilled ? (
+          <SpeciesPrompt as="button" type="button" onClick={() => setSpeciesOpen(true)}>
+            <SpeciesPromptText>
+              <SpeciesPromptTitle>告訴我們你喜歡的物種</SpeciesPromptTitle>
+              <SpeciesPromptHint>勾選你飼養或喜歡的物種，只要幾秒鐘</SpeciesPromptHint>
+            </SpeciesPromptText>
+            <SpeciesPromptAction>填寫</SpeciesPromptAction>
+          </SpeciesPrompt>
+        ) : null}
 
         <AnnouncementCarousel />
 
@@ -142,6 +153,20 @@ export default function HomePage() {
               </FeatureIcon>
               交易紀錄
             </FeatureLink>
+            <FeatureLink type="button" onClick={() => setSpeciesOpen(true)}>
+              <FeatureIcon aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M12 19.5s-7-4.3-7-9.6A3.9 3.9 0 0 1 12 7.6a3.9 3.9 0 0 1 7 2.3c0 5.3-7 9.6-7 9.6z"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </FeatureIcon>
+              喜歡的物種
+            </FeatureLink>
           </FeatureGrid>
         </FeatureCard>
 
@@ -191,6 +216,10 @@ export default function HomePage() {
       </Scroll>
 
       <BottomNav />
+
+      {speciesOpen ? (
+        <FavoriteSpeciesModal user={user} onClose={() => setSpeciesOpen(false)} />
+      ) : null}
 
       {infoOpen ? (
         <>
@@ -266,6 +295,48 @@ const StatLabel = styled.p`
   margin: 0;
   color: var(--dash-muted);
   font-size: 0.82rem;
+`
+
+const SpeciesPrompt = styled(Card)`
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  margin-top: 0.85rem;
+  padding: 0.95rem 1.1rem;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+`
+
+const SpeciesPromptText = styled.span`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+`
+
+const SpeciesPromptTitle = styled.span`
+  font-size: 0.95rem;
+  font-weight: 600;
+`
+
+const SpeciesPromptHint = styled.span`
+  color: var(--dash-muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+`
+
+const SpeciesPromptAction = styled.span`
+  flex-shrink: 0;
+  padding: 0.45rem 0.95rem;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #000000;
+  font-size: 0.85rem;
+  font-weight: 700;
 `
 
 const FeatureCard = styled(Card)`
