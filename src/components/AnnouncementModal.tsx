@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type MouseEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import styled, { keyframes } from 'styled-components'
 
-const ANNOUNCEMENT_KEY = 'sailor_announcement_2024_10_05'
+const ANNOUNCEMENT_KEY = 'sailor_announcement_2026_10_15'
 const ANNOUNCEMENT_INTERVAL = 24 * 60 * 60 * 1000
 const LOGIN_PATH = '/login'
 const openListeners = new Set<() => void>()
@@ -94,13 +94,14 @@ export default function AnnouncementModal({ onClose }: AnnouncementModalProps) {
             水手會員系統將於 10/15 正式上線！
           </Title>
 
-          <Highlight>
-            為回饋舊會員，於 10/15 - 12/31 活動期間完成登記，即可 <Strong>免費轉換永久金卡！</Strong>
-          </Highlight>
+          <Section>
+            <SectionTitle>1. 新會員可獲得 20 元折價券</SectionTitle>
+            <Method>來店向門市人員索取，即可獲得一張 20 元折價券。</Method>
+          </Section>
 
           <Section>
+            <SectionTitle>2. 舊會員可免費轉換永久金卡</SectionTitle>
             <StepList>
-              <Step>註冊水手會員系統</Step>
               <Step>
                 於本 LINE 帳號回覆您的「手機號碼」＋已完成註冊
                 <Example>範例：0912345678 已完成註冊</Example>
@@ -112,7 +113,6 @@ export default function AnnouncementModal({ onClose }: AnnouncementModalProps) {
           <Section>
             <SectionTitle>⚠️ 注意事項：</SectionTitle>
             <NoteList>
-              <Note>舊會員免費轉換權益至 12/31 止</Note>
               <Note>
                 各等級詳細內容請見
                 <BenefitsLink type="button" onClick={openVip}>
@@ -204,22 +204,6 @@ const Title = styled.h2`
   text-align: center;
 `
 
-const Highlight = styled.div`
-  margin: 0 0 1.25rem;
-  padding: 0.85rem;
-  background: rgba(255, 140, 66, 0.15);
-  border: 1px solid rgba(255, 140, 66, 0.3);
-  border-radius: 0.5rem;
-  font-size: 0.9rem;
-  line-height: 1.4;
-  text-align: center;
-`
-
-const Strong = styled.strong`
-  color: var(--color-accent);
-  font-weight: 700;
-`
-
 const Section = styled.div`
   margin: 0 0 1.25rem;
 `
@@ -228,6 +212,12 @@ const SectionTitle = styled.h3`
   margin: 0 0 0.6rem;
   font-size: 0.9rem;
   font-weight: 700;
+`
+
+const Method = styled.p`
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
 `
 
 const StepList = styled.ol`
