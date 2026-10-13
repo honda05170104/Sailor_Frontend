@@ -21,7 +21,7 @@ export default function FavoriteSpeciesModal({ user, onClose }: FavoriteSpeciesM
   const [selected, setSelected] = useState<string[]>(() =>
     (user?.interestedSpecies ?? []).map((item) => String(item.id)),
   )
-  const [other, setOther] = useState(() => user?.otherSpecies ?? '')
+  const [otherSpecies, setOtherSpecies] = useState('')
 
   useEffect(() => {
     if (!data && !loading) void dispatch(getSpecies())
@@ -45,7 +45,9 @@ export default function FavoriteSpeciesModal({ user, onClose }: FavoriteSpeciesM
   }
 
   async function onSubmit() {
-    const result = await dispatch(updateSpecies({ speciesIds: selected, other: other.trim() }))
+    const result = await dispatch(
+      updateSpecies({ speciesIds: selected, otherSpecies: otherSpecies.trim() }),
+    )
     if (updateSpecies.fulfilled.match(result)) onClose()
   }
 
@@ -62,7 +64,6 @@ export default function FavoriteSpeciesModal({ user, onClose }: FavoriteSpeciesM
 
         <Header>
           <Title id="favorite-species-title">喜歡的物種</Title>
-          <Hint>勾選你飼養或喜歡的物種，清單裡沒有的可以填在「其他」</Hint>
         </Header>
 
         <Content>
@@ -100,15 +101,15 @@ export default function FavoriteSpeciesModal({ user, onClose }: FavoriteSpeciesM
 
           <Group>
             <GroupName as="label" htmlFor="favorite-species-other">
-              其他
+              許願
             </GroupName>
             <OtherInput
               id="favorite-species-other"
               type="text"
-              value={other}
+              value={otherSpecies}
               maxLength={OTHER_MAX_LENGTH}
-              placeholder="清單裡沒有的物種"
-              onChange={(event) => setOther(event.target.value)}
+              placeholder="想要養什麼？"
+              onChange={(event) => setOtherSpecies(event.target.value)}
             />
           </Group>
         </Content>
@@ -196,13 +197,6 @@ const Title = styled.h2`
   font-size: 1.05rem;
   font-weight: 700;
   line-height: 1.3;
-`
-
-const Hint = styled.p`
-  margin: 0.4rem 0 0;
-  color: var(--color-muted);
-  font-size: 0.8rem;
-  line-height: 1.4;
 `
 
 const Content = styled.div`

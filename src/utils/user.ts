@@ -45,8 +45,8 @@ export type InterestedSpecies = {
 
 export type UpdateSpeciesPayload = {
   speciesIds: string[]
-  /** Free text for species not in the list; empty string when blank. */
-  other: string
+  /** Creates a review request. Not stored on the member. Empty string when blank. */
+  otherSpecies: string
 }
 
 export type UpdateSpeciesResponse = {
@@ -84,7 +84,6 @@ export type UserProfile = {
   couponCount?: number
   tags?: UserTag[]
   interestedSpecies?: InterestedSpecies[]
-  otherSpecies?: string
   /** True once the species form is submitted, even with nothing selected. */
   speciesFormFilled?: boolean
   profileCompleteness?: {
