@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { openAnnouncement } from '../../components/AnnouncementModal'
+import AnnouncementCarousel from '../../components/AnnouncementCarousel'
 import BottomNav from '../../components/BottomNav'
 import { Card, Dashboard, Scroll } from '../../components/Dashboard'
 import HomeSkeleton from '../../components/HomeSkeleton'
@@ -11,14 +11,6 @@ import UserHeader from '../../components/UserHeader'
 import { useAppDispatch, useAppSelector } from '../../customHooks/useApp'
 import { getUser } from '../../redux/features/user'
 import { resolveVipTheme } from '../../utils/vipTheme'
-
-const ANNOUNCEMENTS: { src: string; alt: string; href?: string; modal?: boolean }[] = [
-  {
-    src: '/announcement/announcement-launch.jpg',
-    alt: '水手會員系統 10/5 正式上線，舊會員免費轉換永久金卡',
-    modal: true,
-  },
-]
 
 export default function HomePage() {
   const dispatch = useAppDispatch()
@@ -90,45 +82,7 @@ export default function HomePage() {
           </StatCard>
         </Stats>
 
-        <AnnouncementCard aria-label="公告">
-          <FeatureTitle>公告</FeatureTitle>
-          {ANNOUNCEMENTS.length ? (
-            <AnnouncementList>
-              {ANNOUNCEMENTS.map((item) => {
-                const image = <img src={item.src} alt={item.alt} />
-                if (item.modal) {
-                  return (
-                    <AnnouncementButton
-                      key={item.src}
-                      type="button"
-                      onClick={() => openAnnouncement()}
-                    >
-                      {image}
-                    </AnnouncementButton>
-                  )
-                }
-                if (item.href) {
-                  return (
-                    <AnnouncementLink
-                      key={item.src}
-                      href={item.href}
-                      onClick={(event) => {
-                        if (!item.href?.startsWith('/')) return
-                        event.preventDefault()
-                        navigate(item.href)
-                      }}
-                    >
-                      {image}
-                    </AnnouncementLink>
-                  )
-                }
-                return <AnnouncementImage key={item.src}>{image}</AnnouncementImage>
-              })}
-            </AnnouncementList>
-          ) : (
-            <AnnouncementEmpty>尚無公告</AnnouncementEmpty>
-          )}
-        </AnnouncementCard>
+        <AnnouncementCarousel />
 
         <FeatureCard aria-label="功能">
           <FeatureTitle>功能</FeatureTitle>
@@ -365,56 +319,6 @@ const FeatureIcon = styled.span`
     width: 2.1rem;
     height: 2.1rem;
   }
-`
-
-const AnnouncementCard = styled(Card)`
-  margin-top: 0.85rem;
-  padding: 1rem 1.1rem 1.05rem;
-`
-
-const AnnouncementList = styled.div`
-  display: grid;
-  gap: 0.65rem;
-  margin-top: 0.75rem;
-`
-
-const announcementImageStyles = `
-  display: block;
-  overflow: hidden;
-  border-radius: 1rem;
-  background: #2c2c2e;
-
-  img {
-    display: block;
-    width: 100%;
-    height: auto;
-  }
-`
-
-const AnnouncementImage = styled.div`
-  ${announcementImageStyles}
-`
-
-const AnnouncementLink = styled.a`
-  ${announcementImageStyles}
-  color: inherit;
-  text-decoration: none;
-`
-
-const AnnouncementButton = styled.button`
-  ${announcementImageStyles}
-  width: 100%;
-  padding: 0;
-  border: 0;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-`
-
-const AnnouncementEmpty = styled.p`
-  margin: 0.75rem 0 0.15rem;
-  color: var(--dash-muted);
-  font-size: 0.82rem;
 `
 
 const SocialRow = styled.nav`

@@ -91,7 +91,7 @@ export default function AnnouncementModal({ onClose }: AnnouncementModalProps) {
         
         <Content>
           <Title id="announcement-title">
-            水手會員系統將於 10/5 正式上線！
+            水手會員系統將於 10/15 正式上線！
           </Title>
           
           <Subtitle>
@@ -99,7 +99,7 @@ export default function AnnouncementModal({ onClose }: AnnouncementModalProps) {
           </Subtitle>
 
           <Highlight>
-            為回饋舊會員，於 10/5 - 12/31 活動期間完成登記，即可 <Strong>免費轉換永久金卡！</Strong>
+            為回饋舊會員，於 10/15 - 12/31 活動期間完成登記，即可 <Strong>免費轉換永久金卡！</Strong>
           </Highlight>
 
           <Section>

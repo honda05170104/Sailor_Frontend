@@ -75,6 +75,7 @@ function normalizePhone(value: string) {
 
 function validatePhone(value: string) {
   const phone = normalizePhone(value)
+  if (!phone) return '請輸入電話'
   if (!/^09\d{8}$/.test(phone)) return '請輸入有效的手機號碼'
   return null
 }
@@ -109,6 +110,9 @@ export default function CompleteProfilePage() {
     const max = birthdayParts.year === String(today.year) ? today.month : 12
     return Array.from({ length: max }, (_, index) => pad2(index + 1))
   }, [birthdayParts.year, today])
+  const phoneFilled = normalizePhone(mobile).length > 0
+  const birthdayFilled = Boolean(birthdayParts.year && birthdayParts.month && birthdayParts.day)
+  const canSubmit = phoneFilled && birthdayFilled
   const days = useMemo(() => {
     let max = 31
     if (birthdayParts.year && birthdayParts.month) {
@@ -235,7 +239,7 @@ export default function CompleteProfilePage() {
               </select>
             </DateInputShell>
           </CompleteField>
-          <CompleteSubmit type="submit" disabled={loading}>
+          <CompleteSubmit type="submit" disabled={loading || !canSubmit} aria-busy={loading || undefined}>
             {loading ? '儲存中…' : '完成'}
           </CompleteSubmit>
         </CompleteForm>
@@ -366,6 +370,11 @@ const CompleteSubmit = styled.button`
   cursor: pointer;
 
   &:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  &[aria-busy='true']:disabled {
     cursor: wait;
     opacity: 0.78;
   }
