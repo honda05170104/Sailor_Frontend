@@ -12,7 +12,12 @@ import {
   startLineLogin,
   takeLineLoginCallback,
 } from '../../utils/lineAuth'
-import { isInLineApp, shouldAutoLineLogin, suppressLineAutoLogin } from '../../utils/liff'
+import {
+  getLiffAccessToken,
+  isInLineApp,
+  shouldAutoLineLogin,
+  suppressLineAutoLogin,
+} from '../../utils/liff'
 import { getPostAuthPath } from '../../utils/returnTo'
 
 const rise = keyframes`
@@ -90,6 +95,13 @@ export default function LoginPage() {
       return
     }
 
+    const liffAccessToken = getLiffAccessToken()
+    if (liffAccessToken) {
+      liffStarted.current = true
+      dispatch(lineLogin({ accessToken: liffAccessToken }))
+      return
+    }
+
     if (!shouldAutoLineLogin()) {
       setOauthError('無法取得 LINE 登入狀態，請再按一次登入')
       return
@@ -100,7 +112,7 @@ export default function LoginPage() {
     void startLineLogin().catch((err) => {
       setOauthError(err instanceof Error ? err.message : 'LINE 登入失敗')
     })
-  }, [configured, data, error, hasCallback, inLineApp, loading, oauthError])
+  }, [configured, data, dispatch, error, hasCallback, inLineApp, loading, oauthError])
 
   function onLogin() {
     if (!configured) return

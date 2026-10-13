@@ -1,4 +1,5 @@
 import { requestJson } from './api'
+import { isLineAppBrowser } from './liff'
 
 const CHANNEL_ID = import.meta.env.VITE_LINE_CHANNEL_ID?.trim() || ''
 const STATE_KEY = 'line_oauth_state'
@@ -84,10 +85,10 @@ export async function startLineLogin() {
   url.searchParams.set('scope', 'profile openid')
   url.searchParams.set('code_challenge', challenge)
   url.searchParams.set('code_challenge_method', 'S256')
-  // Always set this. Inside LINE the app ignores it. If the user then chooses
-  // "open in external browser", access.line.me is a universal link and would
-  // reopen the LINE app, bouncing until login fails.
-  url.searchParams.set('disable_auto_login', 'true')
+  // Outside LINE, auto login hands off to the LINE app through the
+  // access.line.me universal link and can bounce until login fails. Inside
+  // LINE this must stay off: it also disables auto login there.
+  if (!isLineAppBrowser()) url.searchParams.set('disable_auto_login', 'true')
 
   window.location.assign(url.toString())
 }
