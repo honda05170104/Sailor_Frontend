@@ -1,7 +1,5 @@
-import liff from '@line/liff'
-
 const LIFF_ID = import.meta.env.VITE_LIFF_ID?.trim() || ''
-const LIFF_LOGIN_ATTEMPT_KEY = 'liff_login_attempt'
+const LINE_AUTO_LOGIN_SUPPRESSED_KEY = 'liff_login_attempt'
 
 function isLocalHost() {
   return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
@@ -45,35 +43,19 @@ export async function initLiff() {
   restoreLiffState()
 }
 
-export function isLiffInClient() {
-  if (!LIFF_ID || isLocalHost() || !isLineAppBrowser()) return false
-
-  try {
-    return liff.isInClient()
-  } catch {
-    return false
-  }
+/**
+ * Any browser inside the LINE app, LIFF or not. liff.isInClient() only matches
+ * the LIFF browser, and without liff.init() it misses plain LINE links.
+ */
+export function isInLineApp() {
+  return !isLocalHost() && isLineAppBrowser()
 }
 
-/** Stop the next automatic liff.login(), which would bounce back to the other browser. */
-export function suppressLiffLoginRedirect() {
-  sessionStorage.setItem(LIFF_LOGIN_ATTEMPT_KEY, '1')
+/** Stop the next automatic LINE login, which would bounce back to the other browser. */
+export function suppressLineAutoLogin() {
+  sessionStorage.setItem(LINE_AUTO_LOGIN_SUPPRESSED_KEY, '1')
 }
 
-/** Inside the LIFF browser, return a LINE access token, or ask for web OAuth. */
-export function consumeLiffAccessToken(): string | 'login' | 'outside' {
-  if (!isLiffInClient()) return 'outside'
-
-  try {
-    if (!liff.isLoggedIn()) {
-      if (sessionStorage.getItem(LIFF_LOGIN_ATTEMPT_KEY) === '1') return 'outside'
-      // liff.login() builds an authorize URL without disable_auto_login.
-      return 'login'
-    }
-
-    sessionStorage.removeItem(LIFF_LOGIN_ATTEMPT_KEY)
-    return liff.getAccessToken() || 'login'
-  } catch {
-    return 'outside'
-  }
+export function shouldAutoLineLogin() {
+  return isInLineApp() && sessionStorage.getItem(LINE_AUTO_LOGIN_SUPPRESSED_KEY) !== '1'
 }

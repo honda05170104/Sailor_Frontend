@@ -12,7 +12,7 @@ import {
   startLineLogin,
   takeLineLoginCallback,
 } from '../../utils/lineAuth'
-import { consumeLiffAccessToken, isLiffInClient, suppressLiffLoginRedirect } from '../../utils/liff'
+import { isInLineApp, shouldAutoLineLogin, suppressLineAutoLogin } from '../../utils/liff'
 import { getPostAuthPath } from '../../utils/returnTo'
 
 const rise = keyframes`
@@ -34,7 +34,7 @@ export default function LoginPage() {
     (state) => state.userReducer.lineLogin,
   )
   const [oauthError, setOauthError] = useState<string | null>(null)
-  const inLineApp = isLiffInClient()
+  const inLineApp = isInLineApp()
   const liffStarted = useRef(false)
   const configured = hasLineChannelId()
   const callbackParams = new URLSearchParams(location.search)
@@ -62,7 +62,7 @@ export default function LoginPage() {
     if (!params.has('code') && !params.has('error')) return
 
     if (inLineApp && isUnownedLineCallback(params)) {
-      suppressLiffLoginRedirect()
+      suppressLineAutoLogin()
       navigate('/login', { replace: true })
       return
     }
@@ -90,23 +90,17 @@ export default function LoginPage() {
       return
     }
 
-    const accessToken = consumeLiffAccessToken()
-    if (accessToken === 'login') {
-      if (!configured) return
-      liffStarted.current = true
-      void startLineLogin().catch((err) => {
-        setOauthError(err instanceof Error ? err.message : 'LINE 登入失敗')
-      })
-      return
-    }
-    if (accessToken === 'outside') {
+    if (!shouldAutoLineLogin()) {
       setOauthError('無法取得 LINE 登入狀態，請再按一次登入')
       return
     }
+    if (!configured) return
 
     liffStarted.current = true
-    dispatch(lineLogin({ accessToken }))
-  }, [configured, data, dispatch, error, hasCallback, inLineApp, loading, oauthError])
+    void startLineLogin().catch((err) => {
+      setOauthError(err instanceof Error ? err.message : 'LINE 登入失敗')
+    })
+  }, [configured, data, error, hasCallback, inLineApp, loading, oauthError])
 
   function onLogin() {
     if (!configured) return
