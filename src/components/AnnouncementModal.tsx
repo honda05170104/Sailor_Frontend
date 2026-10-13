@@ -93,10 +93,6 @@ export default function AnnouncementModal({ onClose }: AnnouncementModalProps) {
           <Title id="announcement-title">
             水手會員系統將於 10/15 正式上線！
           </Title>
-          
-          <Subtitle>
-            （目前僅適用台北店）
-          </Subtitle>
 
           <Highlight>
             為回饋舊會員，於 10/15 - 12/31 活動期間完成登記，即可 <Strong>免費轉換永久金卡！</Strong>
@@ -116,7 +112,6 @@ export default function AnnouncementModal({ onClose }: AnnouncementModalProps) {
           <Section>
             <SectionTitle>⚠️ 注意事項：</SectionTitle>
             <NoteList>
-              <Note>本活動與會員系統目前僅適用台北店</Note>
               <Note>舊會員免費轉換權益至 12/31 止</Note>
               <Note>
                 各等級詳細內容請見
@@ -202,17 +197,10 @@ const Content = styled.div`
 `
 
 const Title = styled.h2`
-  margin: 0 0 0.5rem;
+  margin: 0 0 1rem;
   font-size: 1.05rem;
   font-weight: 700;
   line-height: 1.3;
-  text-align: center;
-`
-
-const Subtitle = styled.p`
-  margin: 0 0 1rem;
-  color: var(--color-muted);
-  font-size: 0.85rem;
   text-align: center;
 `
 
