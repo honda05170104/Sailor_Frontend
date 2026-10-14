@@ -7,7 +7,7 @@ import { useAppDispatch, useAppSelector } from '../../customHooks/useApp'
 import { getUser, logout, updateProfile } from '../../redux/features/user'
 import { LoginError, LoginMain, LoginStage } from './LoginPage'
 import { peekReturnTo } from '../../utils/returnTo'
-import { isProfileIncomplete } from '../../utils/user'
+import { GENDER_OPTIONS, type Gender, isProfileIncomplete } from '../../utils/user'
 
 type BirthdayParts = {
   year: string
@@ -99,6 +99,7 @@ export default function CompleteProfilePage() {
   const [birthdayParts, setBirthdayParts] = useState(() =>
     splitBirthday(user?.birthday?.slice(0, 10) ?? ''),
   )
+  const [gender, setGender] = useState<Gender | ''>(user?.gender ?? '')
   const [formError, setFormError] = useState<string | null>(null)
   const today = useMemo(() => todayParts(), [])
   const years = useMemo(() => {
@@ -112,7 +113,7 @@ export default function CompleteProfilePage() {
   }, [birthdayParts.year, today])
   const phoneFilled = normalizePhone(mobile).length > 0
   const birthdayFilled = Boolean(birthdayParts.year && birthdayParts.month && birthdayParts.day)
-  const canSubmit = phoneFilled && birthdayFilled
+  const canSubmit = phoneFilled && birthdayFilled && Boolean(gender)
   const days = useMemo(() => {
     let max = 31
     if (birthdayParts.year && birthdayParts.month) {
@@ -136,6 +137,7 @@ export default function CompleteProfilePage() {
   useEffect(() => {
     if (!user) return
     setMobile((current) => current || user.mobile || '')
+    setGender((current) => current || user.gender || '')
     const nextBirthday = user.birthday?.slice(0, 10) || ''
     setBirthday((current) => current || nextBirthday)
     setBirthdayParts((current) =>
@@ -166,14 +168,15 @@ export default function CompleteProfilePage() {
     const nextMobile = normalizePhone(mobile)
     const phoneError = validatePhone(nextMobile)
     const birthdayError = validateBirthday(birthday)
-    const message = phoneError || birthdayError
-    if (message) {
+    const genderError = gender ? null : '請選擇生理性別'
+    const message = phoneError || birthdayError || genderError
+    if (message || !gender) {
       setFormError(message)
       return
     }
 
     setFormError(null)
-    const result = await dispatch(updateProfile({ mobile: nextMobile, birthday }))
+    const result = await dispatch(updateProfile({ mobile: nextMobile, birthday, gender }))
     if (updateProfile.fulfilled.match(result)) {
       navigate(peekReturnTo() || '/', { replace: true })
     }
@@ -183,7 +186,7 @@ export default function CompleteProfilePage() {
     <LoginMain>
       <CompleteStage>
         <CompleteTitle>完成註冊</CompleteTitle>
-        <CompleteLead>請填寫電話與生日，才能開始使用</CompleteLead>
+        <CompleteLead>請填寫電話、生日與生理性別，才能開始使用</CompleteLead>
         <CompleteForm onSubmit={(event) => void onSubmit(event)}>
           <CompleteField>
             <span>電話</span>
@@ -238,6 +241,24 @@ export default function CompleteProfilePage() {
                 ))}
               </select>
             </DateInputShell>
+          </CompleteField>
+          <CompleteField as="div">
+            <span id="gender-label">生理性別</span>
+            <GenderOptions role="radiogroup" aria-labelledby="gender-label">
+              {GENDER_OPTIONS.map((option) => (
+                <GenderOption key={option.value} $active={gender === option.value}>
+                  <input
+                    type="radio"
+                    name="gender"
+                    value={option.value}
+                    checked={gender === option.value}
+                    onChange={() => setGender(option.value)}
+                    required
+                  />
+                  {option.label}
+                </GenderOption>
+              ))}
+            </GenderOptions>
           </CompleteField>
           <CompleteSubmit type="submit" disabled={loading || !canSubmit} aria-busy={loading || undefined}>
             {loading ? '儲存中…' : '完成'}
@@ -354,6 +375,42 @@ const DateInputShell = styled.span`
 
   select:focus {
     outline: none;
+  }
+`
+
+const GenderOptions = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+`
+
+const GenderOption = styled.label<{ $active: boolean }>`
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.25rem;
+  padding: 0 0.5rem;
+  border: 1px solid ${({ $active }) => ($active ? '#6cc762' : 'rgba(255, 255, 255, 0.16)')};
+  border-radius: 1rem;
+  background: ${({ $active }) => ($active ? 'rgba(108, 199, 98, 0.16)' : '#1c1c1e')};
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+
+  input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &:focus-within {
+    outline: 2px solid #6cc762;
+    outline-offset: 1px;
   }
 `
 

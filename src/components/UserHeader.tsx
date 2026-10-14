@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 
 import { Card, Eyebrow, PlaceholderText, Skeleton } from './Dashboard'
-import type { UserProfile } from '../utils/user'
+import { genderLabel, type UserProfile } from '../utils/user'
 import {
   resolveVipTheme,
   VIP_TAG_BG,
@@ -246,6 +246,10 @@ export default function UserHeader({
               <div>
                 <dt>生日</dt>
                 <dd>{formatBirthday(user?.birthday) ?? <DetailPlaceholder>1990/01/01</DetailPlaceholder>}</dd>
+              </div>
+              <div>
+                <dt>生理性別</dt>
+                <dd>{genderLabel(user?.gender) ?? <DetailPlaceholder>未填寫</DetailPlaceholder>}</dd>
               </div>
               <div>
                 <dt>累積消費</dt>

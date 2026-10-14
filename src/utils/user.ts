@@ -53,6 +53,18 @@ export type UpdateSpeciesResponse = {
   user: UserProfile
 }
 
+export type Gender = 'male' | 'female' | 'undisclosed'
+
+export const GENDER_OPTIONS: { value: Gender; label: string }[] = [
+  { value: 'male', label: '男' },
+  { value: 'female', label: '女' },
+  { value: 'undisclosed', label: '不願透露' },
+]
+
+export function genderLabel(gender?: string) {
+  return GENDER_OPTIONS.find((option) => option.value === gender)?.label
+}
+
 export type UserProfile = {
   id: string
   lineUserId: string
@@ -60,6 +72,8 @@ export type UserProfile = {
   realName?: string
   mobile?: string
   birthday?: string
+  /** 生理性別；舊會員可能是空字串 */
+  gender?: Gender | ''
   address?: string
   avatarUrl: string
   avatarSource?: 'line' | null
@@ -110,6 +124,7 @@ export type GetUserResponse = {
 export type UpdateUserPayload = {
   mobile: string
   birthday: string
+  gender: Gender
 }
 
 export type TransactionItem = {
