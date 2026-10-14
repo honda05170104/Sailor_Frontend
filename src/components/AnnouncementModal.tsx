@@ -100,13 +100,13 @@ export default function AnnouncementModal({ onClose }: AnnouncementModalProps) {
           </Section>
 
           <Section>
-            <SectionTitle>2. 舊會員可免費轉換永久金卡</SectionTitle>
+            <SectionTitle>2. 舊會員註冊即享 200 元折價券</SectionTitle>
             <StepList>
               <Step>
                 於本 LINE 帳號回覆您的「手機號碼」＋已完成註冊
                 <Example>範例：0912345678 已完成註冊</Example>
               </Step>
-              <Step>等候客服核對資料，完成永久金卡轉換！</Step>
+              <Step>等候客服核對資料，即可獲得 200 元折價券！</Step>
             </StepList>
           </Section>
 

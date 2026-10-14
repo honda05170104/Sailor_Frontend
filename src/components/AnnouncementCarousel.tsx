@@ -11,7 +11,7 @@ type Announcement = {
 const ANNOUNCEMENTS: Announcement[] = [
   {
     src: '/announcement/announcement-launch-1015.jpg',
-    alt: '水手會員系統 10/15 正式上線，舊會員免費轉換永久金卡',
+    alt: '水手會員系統 10/15 正式上線，舊會員註冊即享 200 元折價券',
     modal: true,
   },
   {
