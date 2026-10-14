@@ -13,6 +13,7 @@ import {
   takeLineLoginCallback,
 } from '../../utils/lineAuth'
 import {
+  ensureLiff,
   getLiffAccessToken,
   isInLineApp,
   shouldAutoLineLogin,
@@ -95,23 +96,26 @@ export default function LoginPage() {
       return
     }
 
-    const liffAccessToken = getLiffAccessToken()
-    if (liffAccessToken) {
-      liffStarted.current = true
-      dispatch(lineLogin({ accessToken: liffAccessToken }))
-      return
-    }
-
-    if (!shouldAutoLineLogin()) {
-      setOauthError('無法取得 LINE 登入狀態，請再按一次登入')
-      return
-    }
-    if (!configured) return
-
     liffStarted.current = true
-    void startLineLogin().catch((err) => {
-      setOauthError(err instanceof Error ? err.message : 'LINE 登入失敗')
-    })
+    void ensureLiff()
+      .then(() => {
+        const liffAccessToken = getLiffAccessToken()
+        if (liffAccessToken) {
+          dispatch(lineLogin({ accessToken: liffAccessToken }))
+          return
+        }
+
+        if (!shouldAutoLineLogin()) {
+          setOauthError('無法取得 LINE 登入狀態，請再按一次登入')
+          return
+        }
+        if (!configured) return
+
+        return startLineLogin()
+      })
+      .catch((err: unknown) => {
+        setOauthError(err instanceof Error ? err.message : 'LINE 登入失敗')
+      })
   }, [configured, data, dispatch, error, hasCallback, inLineApp, loading, oauthError])
 
   function onLogin() {
