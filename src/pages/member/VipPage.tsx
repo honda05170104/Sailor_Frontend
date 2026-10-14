@@ -100,7 +100,6 @@ export default function VipPage() {
       <Scroll>
         <SectionTitle>會員規則</SectionTitle>
         <InfoCard>
-          <StoreNotice>目前僅適用台北大同店</StoreNotice>
           {vipState.error ? <VipItemMeta>{vipState.error}</VipItemMeta> : null}
           <VipList>
             {vips.map((vip) => {
@@ -201,13 +200,6 @@ const BenefitIndex = styled.span`
   flex: 0 0 auto;
   color: var(--dash-muted);
   font-weight: 650;
-`
-
-const StoreNotice = styled.p`
-  margin: 0 0 0.85rem;
-  color: var(--dash-muted);
-  font-size: 0.78rem;
-  line-height: 1.5;
 `
 
 const Disclaimer = styled.p`
