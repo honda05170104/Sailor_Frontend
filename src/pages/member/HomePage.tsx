@@ -83,7 +83,7 @@ export default function HomePage() {
           </StatCard>
         </Stats>
 
-        {!user?.speciesFormFilled ? (
+        {/* {!user?.speciesFormFilled ? (
           <SpeciesPrompt as="button" type="button" onClick={() => setSpeciesOpen(true)}>
             <SpeciesPromptText>
               <SpeciesPromptTitle>告訴我們你喜歡的物種</SpeciesPromptTitle>
@@ -91,7 +91,7 @@ export default function HomePage() {
             </SpeciesPromptText>
             <SpeciesPromptAction>填寫</SpeciesPromptAction>
           </SpeciesPrompt>
-        ) : null}
+        ) : null} */}
 
         <AnnouncementCarousel />
 
@@ -153,7 +153,7 @@ export default function HomePage() {
               </FeatureIcon>
               交易紀錄
             </FeatureLink>
-            <FeatureLink type="button" onClick={() => setSpeciesOpen(true)}>
+            {/* <FeatureLink type="button" onClick={() => setSpeciesOpen(true)}>
               <FeatureIcon aria-hidden="true">
                 <svg viewBox="0 0 24 24">
                   <path
@@ -166,7 +166,7 @@ export default function HomePage() {
                 </svg>
               </FeatureIcon>
               喜歡的物種
-            </FeatureLink>
+            </FeatureLink> */}
           </FeatureGrid>
         </FeatureCard>
 
@@ -297,7 +297,7 @@ const StatLabel = styled.p`
   font-size: 0.82rem;
 `
 
-const SpeciesPrompt = styled(Card)`
+/* const SpeciesPrompt = styled(Card)`
   display: flex;
   align-items: center;
   gap: 0.85rem;
@@ -337,7 +337,7 @@ const SpeciesPromptAction = styled.span`
   color: #000000;
   font-size: 0.85rem;
   font-weight: 700;
-`
+` */
 
 const FeatureCard = styled(Card)`
   margin-top: 0.85rem;
