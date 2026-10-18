@@ -1,8 +1,9 @@
 import liff from '@line/liff'
 
+import { isOfficialPath } from './official'
+
 const LIFF_ID = import.meta.env.VITE_LIFF_ID?.trim() || ''
 const LINE_AUTO_LOGIN_SUPPRESSED_KEY = 'liff_login_attempt'
-const PUBLIC_PATHS = ['/store', '/vip']
 
 let liffReady: Promise<void> | null = null
 
@@ -44,9 +45,8 @@ function restoreLiffState() {
   window.history.replaceState(null, '', `${next.pathname}${next.search}${next.hash}`)
 }
 
-function isPublicPath() {
-  const pathname = readLiffState()?.pathname ?? window.location.pathname
-  return PUBLIC_PATHS.includes(pathname)
+function isOfficialEntry() {
+  return isOfficialPath(readLiffState()?.pathname ?? window.location.pathname)
 }
 
 /** Our own web OAuth callback, which liff.init() must not try to consume. */
@@ -69,8 +69,8 @@ export function ensureLiff() {
 export async function initLiff() {
   if (!LIFF_ID) return
 
-  // Public pages stay logged out in LINE; LoginPage inits LIFF on demand.
-  if (!isPublicPath()) await ensureLiff()
+  // Official pages never touch LINE login; LoginPage inits LIFF on demand.
+  if (!isOfficialEntry()) await ensureLiff()
 
   restoreLiffState()
 }

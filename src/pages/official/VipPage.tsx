@@ -1,12 +1,10 @@
 import { useEffect } from 'react'
 import styled from 'styled-components'
 
-import BottomNav from '../../components/BottomNav'
-import { Card, Dashboard, Scroll, SectionTitle, Skeleton } from '../../components/Dashboard'
+import { Card, Dashboard, Scroll, Skeleton } from '../../components/Dashboard'
+import OfficialHeader from '../../components/OfficialHeader'
 import { useAppDispatch, useAppSelector } from '../../customHooks/useApp'
-import { getUser, getVips } from '../../redux/features/user'
-import { getAuthToken } from '../../utils/auth'
-import { resolveVipTheme } from '../../utils/vipTheme'
+import { getVips } from '../../redux/features/user'
 
 function normalizeVipText(value: string) {
   return value.replace(/[。．.]/g, '').replace(/\s+/g, '').trim()
@@ -62,43 +60,32 @@ function LinkifiedText({ text }: { text: string }) {
 function VipSkeleton() {
   return (
     <Dashboard>
-      <Scroll aria-busy="true" aria-label="載入中">
+      <PageScroll aria-busy="true" aria-label="載入中">
         <Skeleton $variant="title" />
         <Skeleton $variant="wide" />
         <Skeleton $variant="wide" />
-      </Scroll>
-      <BottomNav />
+      </PageScroll>
     </Dashboard>
   )
 }
 
 export default function VipPage() {
   const dispatch = useAppDispatch()
-  const userState = useAppSelector((state) => state.userReducer.getUser)
   const vipState = useAppSelector((state) => state.userReducer.getVips)
-  const user = userState.data?.user
   const vips = vipState.data?.vips ?? []
-  const loggedIn = Boolean(getAuthToken())
-
-  useEffect(() => {
-    if (!loggedIn || user || userState.loading || userState.error) return
-    void dispatch(getUser())
-  }, [dispatch, loggedIn, user, userState.error, userState.loading])
 
   useEffect(() => {
     void dispatch(getVips())
   }, [dispatch])
 
-  if ((loggedIn && userState.loading && !user) || (vipState.loading && !vipState.data)) {
+  if (vipState.loading && !vipState.data) {
     return <VipSkeleton />
   }
 
-  const vipTheme = resolveVipTheme(user?.vip)
-
   return (
-    <Dashboard $vip={vipTheme}>
-      <Scroll>
-        <SectionTitle>會員規則</SectionTitle>
+    <Dashboard>
+      <PageScroll>
+        <OfficialHeader title="會員權益" />
         <InfoCard>
           {vipState.error ? <VipItemMeta>{vipState.error}</VipItemMeta> : null}
           <VipList>
@@ -137,12 +124,14 @@ export default function VipPage() {
             水手會員等級或資格累計辦法，本公司保有解釋及隨時變更、增加條文相關之權利，且不另行通知。
           </Disclaimer>
         </InfoCard>
-      </Scroll>
-
-      <BottomNav />
+      </PageScroll>
     </Dashboard>
   )
 }
+
+const PageScroll = styled(Scroll)`
+  padding-bottom: 2rem;
+`
 
 const InfoCard = styled(Card)`
   padding: 1rem 1.1rem 1.05rem;

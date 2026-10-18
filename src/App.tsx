@@ -11,8 +11,8 @@ import CouponsPage from './pages/member/CouponsPage'
 import HomePage from './pages/member/HomePage'
 import LoginPage from './pages/member/LoginPage'
 import TransactionsPage from './pages/member/TransactionsPage'
-import VipPage from './pages/member/VipPage'
 import StoreInfoPage from './pages/official/StoreInfoPage'
+import VipPage from './pages/official/VipPage'
 import { getAuthToken } from './utils/auth'
 import { clearReturnToIfMatched, peekReturnTo } from './utils/returnTo'
 
@@ -44,6 +44,8 @@ export default function App() {
       <AnnouncementModal />
       <Routes>
         <Route path="/login" element={<LoginRoute />} />
+
+        {/* Official site: public, no login or LIFF. Keep in sync with OFFICIAL_PATHS. */}
         <Route path="/store" element={<StoreInfoPage />} />
         <Route path="/vip" element={<VipPage />} />
 

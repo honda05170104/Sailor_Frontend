@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, type MouseEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import styled, { keyframes } from 'styled-components'
 
+import { isOfficialPath } from '../utils/official'
+
 const ANNOUNCEMENT_KEY = 'sailor_announcement_2026_10_15'
 const ANNOUNCEMENT_INTERVAL = 24 * 60 * 60 * 1000
 const LOGIN_PATH = '/login'
@@ -32,12 +34,13 @@ export default function AnnouncementModal({ onClose }: AnnouncementModalProps) {
   const navigate = useNavigate()
   const location = useLocation()
   const [isVisible, setIsVisible] = useState(false)
-  const isLoginPage = location.pathname === LOGIN_PATH
-  const isLoginPageRef = useRef(isLoginPage)
-  isLoginPageRef.current = isLoginPage
+  const isHidden =
+    location.pathname === LOGIN_PATH || isOfficialPath(location.pathname)
+  const isHiddenRef = useRef(isHidden)
+  isHiddenRef.current = isHidden
 
   useEffect(() => {
-    if (isLoginPage) {
+    if (isHidden) {
       setIsVisible(false)
       return
     }
@@ -45,11 +48,11 @@ export default function AnnouncementModal({ onClose }: AnnouncementModalProps) {
     if (shouldShowAnnouncement()) {
       setIsVisible(true)
     }
-  }, [isLoginPage])
+  }, [isHidden])
 
   useEffect(() => {
     function show() {
-      if (isLoginPageRef.current) return
+      if (isHiddenRef.current) return
       setIsVisible(true)
     }
 

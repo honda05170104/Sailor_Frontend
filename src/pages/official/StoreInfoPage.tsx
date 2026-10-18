@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import BottomNav from '../../components/BottomNav'
-import { Card, Dashboard, Scroll, SectionTitle, Skeleton } from '../../components/Dashboard'
-import { getAuthToken } from '../../utils/auth'
-import { saveReturnTo } from '../../utils/returnTo'
+import { Card, Dashboard, Scroll, Skeleton } from '../../components/Dashboard'
+import OfficialHeader from '../../components/OfficialHeader'
 import { getStoresApi, type Store } from '../../utils/store'
 
 function storeQuery(store: Store) {
@@ -27,8 +24,6 @@ function googleMapsEmbedUrl(store: Store) {
 }
 
 export default function StoreInfoPage() {
-  const navigate = useNavigate()
-  const loggedIn = Boolean(getAuthToken())
   const [stores, setStores] = useState<Store[] | null>(null)
   const [storesError, setStoresError] = useState<string | null>(null)
 
@@ -51,22 +46,10 @@ export default function StoreInfoPage() {
     }
   }, [])
 
-  function onLogin() {
-    saveReturnTo('/store')
-    navigate('/login')
-  }
-
   return (
     <Dashboard>
-      <PageScroll $withNav={loggedIn}>
-        <PageHeader>
-          <PageTitle>門市資訊</PageTitle>
-          {loggedIn ? null : (
-            <LoginBtn type="button" onClick={onLogin}>
-              登入會員
-            </LoginBtn>
-          )}
-        </PageHeader>
+      <PageScroll>
+        <OfficialHeader title="門市資訊" />
 
         {stores === null ? (
           <StoreList aria-busy="true" aria-label="載入門市">
@@ -139,38 +122,12 @@ export default function StoreInfoPage() {
           <EmptyCard>尚無門市資料</EmptyCard>
         )}
       </PageScroll>
-      {loggedIn ? <BottomNav /> : null}
     </Dashboard>
   )
 }
 
-const PageScroll = styled(Scroll)<{ $withNav?: boolean }>`
-  padding-bottom: ${({ $withNav }) => ($withNav ? '6.5rem' : '2rem')};
-`
-
-const PageHeader = styled.header`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin: 0.15rem 0 1rem;
-`
-
-const PageTitle = styled(SectionTitle)`
-  margin: 0;
-`
-
-const LoginBtn = styled.button`
-  flex: 0 0 auto;
-  min-height: 2.15rem;
-  padding: 0 0.9rem;
-  border: 1px solid var(--color-glass-border);
-  border-radius: 999px;
-  background: var(--color-glass);
-  color: var(--color-white);
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
+const PageScroll = styled(Scroll)`
+  padding-bottom: 2rem;
 `
 
 const StoreList = styled.div`
