@@ -4,8 +4,44 @@ import { isOfficialPath } from './official'
 
 const LIFF_ID = import.meta.env.VITE_LIFF_ID?.trim() || ''
 const LINE_AUTO_LOGIN_SUPPRESSED_KEY = 'liff_login_attempt'
+// localStorage, because web LINE login can return in a new tab.
+const REGISTER_STORE_KEY = 'register_store'
 
 let liffReady: Promise<void> | null = null
+
+/** `store` from the URL, or from the query LINE packs into liff.state before init. */
+function readStoreParam() {
+  const params = new URLSearchParams(window.location.search)
+  const direct = params.get('store')
+  if (direct) return direct
+
+  const state = params.get('liff.state')
+  if (!state) return null
+
+  let decoded = state
+  try {
+    decoded = decodeURIComponent(state)
+  } catch {
+    /* already decoded by URLSearchParams */
+  }
+  const queryStart = decoded.indexOf('?')
+  if (queryStart === -1) return null
+  return new URLSearchParams(decoded.slice(queryStart)).get('store')
+}
+
+function rememberRegisterStore() {
+  const value = readStoreParam()?.trim()
+  if (value && /^\d+$/.test(value)) localStorage.setItem(REGISTER_STORE_KEY, value)
+}
+
+/** Store number from the LIFF link this browser came in through, if any. */
+export function getRegisterStore() {
+  return localStorage.getItem(REGISTER_STORE_KEY)
+}
+
+export function clearRegisterStore() {
+  localStorage.removeItem(REGISTER_STORE_KEY)
+}
 
 function isLocalHost() {
   return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
@@ -67,12 +103,14 @@ export function ensureLiff() {
 }
 
 export async function initLiff() {
+  rememberRegisterStore()
   if (!LIFF_ID) return
 
   // Official pages never touch LINE login; LoginPage inits LIFF on demand.
   if (!isOfficialEntry()) await ensureLiff()
 
   restoreLiffState()
+  rememberRegisterStore()
 }
 
 /** Any browser inside the LINE app, LIFF or not. */

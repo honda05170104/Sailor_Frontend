@@ -1,5 +1,6 @@
 import { requestJson } from './api'
 import { setAuthToken } from './auth'
+import { clearRegisterStore, getRegisterStore } from './liff'
 
 export type VipTier = {
   id: string
@@ -217,7 +218,7 @@ export async function loginWithLineApi(accessToken: string) {
     getEndpoint('/lineLogin'),
     {
       method: 'POST',
-      body: JSON.stringify({ accessToken }),
+      body: JSON.stringify({ accessToken, storeId: getRegisterStore() }),
       errorMessage: 'LINE 登入失敗',
     },
   )
@@ -227,6 +228,7 @@ export async function loginWithLineApi(accessToken: string) {
   }
 
   setAuthToken(data.token)
+  clearRegisterStore()
   return data
 }
 
