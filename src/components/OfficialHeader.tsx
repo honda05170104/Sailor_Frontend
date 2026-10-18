@@ -1,30 +1,26 @@
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { SectionTitle } from './Dashboard'
 
 export default function OfficialHeader({ title }: { title: string }) {
   const navigate = useNavigate()
-  const location = useLocation()
-  // 'default' means this page was the entry point, so there is nothing to go back to.
-  const canGoBack = location.key !== 'default'
 
   return (
     <Header>
-      {canGoBack ? (
-        <BackBtn type="button" aria-label="返回" onClick={() => navigate(-1)}>
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path
-              d="M15 5l-7 7 7 7"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </BackBtn>
-      ) : null}
+      {/* The member center is behind RequireAuth, which sends logged-out users to login. */}
+      <BackBtn type="button" aria-label="回到會員中心" onClick={() => navigate('/')}>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M15 5l-7 7 7 7"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </BackBtn>
       <Title>{title}</Title>
     </Header>
   )
