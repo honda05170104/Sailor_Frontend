@@ -1,14 +1,17 @@
 import { useEffect, useMemo } from 'react'
-import styled from 'styled-components'
 
-import BottomNav from '../../components/BottomNav'
+import { EmptyCard, Skeleton } from '../../components/Dashboard'
 import {
-  Card,
-  Dashboard,
-  Scroll,
-  SectionTitle,
-  Skeleton,
-} from '../../components/Dashboard'
+  ItemAmount,
+  ItemCard,
+  ItemChip,
+  ItemChips,
+  ItemList,
+  ItemMeta,
+  ItemName,
+  ItemTop,
+} from '../../components/ItemCard'
+import PageLayout from '../../components/PageLayout'
 import { useAppDispatch, useAppSelector } from '../../customHooks/useApp'
 import { getCoupons } from '../../redux/features/user'
 import type { Coupon } from '../../utils/user'
@@ -80,20 +83,6 @@ function CouponCard({ coupon }: { coupon: Coupon }) {
   )
 }
 
-function CouponsSkeleton() {
-  return (
-    <Dashboard>
-      <Scroll aria-busy="true" aria-label="載入中">
-        <ItemList>
-          <Skeleton $variant="wide" />
-          <Skeleton $variant="wide" />
-        </ItemList>
-      </Scroll>
-      <BottomNav />
-    </Dashboard>
-  )
-}
-
 export default function CouponsPage() {
   const dispatch = useAppDispatch()
   const { data, loading } = useAppSelector((state) => state.userReducer.getCoupons)
@@ -103,90 +92,24 @@ export default function CouponsPage() {
     void dispatch(getCoupons())
   }, [dispatch])
 
-  if (loading && !data) {
-    return <CouponsSkeleton />
-  }
+  const pending = loading && !data
 
   return (
-    <Dashboard>
-      <Scroll>
-        <SectionTitle>優惠券</SectionTitle>
-
-        {coupons.length ? (
-          <ItemList>
-            {coupons.map((coupon) => (
-              <CouponCard key={coupon.id} coupon={coupon} />
-            ))}
-          </ItemList>
-        ) : (
-          <EmptyCard>尚無優惠券</EmptyCard>
-        )}
-      </Scroll>
-
-      <BottomNav />
-    </Dashboard>
+    <PageLayout title="優惠券" nav busy={pending}>
+      {pending ? (
+        <ItemList>
+          <Skeleton $variant="wide" />
+          <Skeleton $variant="wide" />
+        </ItemList>
+      ) : coupons.length ? (
+        <ItemList>
+          {coupons.map((coupon) => (
+            <CouponCard key={coupon.id} coupon={coupon} />
+          ))}
+        </ItemList>
+      ) : (
+        <EmptyCard>尚無優惠券</EmptyCard>
+      )}
+    </PageLayout>
   )
 }
-
-const ItemList = styled.div`
-  display: grid;
-  gap: 0.85rem;
-`
-
-const ItemCard = styled(Card)<{ $muted?: boolean }>`
-  padding: 1rem 1.1rem 1.05rem;
-  opacity: ${({ $muted }) => ($muted ? 0.55 : 1)};
-`
-
-const ItemTop = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-`
-
-const ItemName = styled.p`
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-`
-
-const ItemMeta = styled.p`
-  margin: 0.3rem 0 0;
-  color: var(--dash-muted);
-  font-size: 0.78rem;
-`
-
-const ItemAmount = styled.p`
-  margin: 0;
-  flex: 0 0 auto;
-  font-size: 1.2rem;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-`
-
-const ItemChips = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-top: 0.75rem;
-`
-
-const ItemChip = styled.span`
-  padding: 0.28rem 0.6rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  color: #d1d1d6;
-  font-size: 0.72rem;
-`
-
-const EmptyCard = styled(Card)`
-  display: grid;
-  place-items: center;
-  min-height: 11rem;
-  padding: 1.5rem 1.1rem;
-  color: var(--dash-muted);
-  font-size: 0.88rem;
-  text-align: center;
-`

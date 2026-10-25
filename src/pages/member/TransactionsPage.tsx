@@ -1,14 +1,18 @@
 import { useEffect } from 'react'
 import styled from 'styled-components'
 
-import BottomNav from '../../components/BottomNav'
+import { EmptyCard, Skeleton } from '../../components/Dashboard'
 import {
-  Card,
-  Dashboard,
-  Scroll,
-  SectionTitle,
-  Skeleton,
-} from '../../components/Dashboard'
+  ItemAmount,
+  ItemCard,
+  ItemChip,
+  ItemChips,
+  ItemList,
+  ItemMeta,
+  ItemName,
+  ItemTop,
+} from '../../components/ItemCard'
+import PageLayout from '../../components/PageLayout'
 import { useAppDispatch, useAppSelector } from '../../customHooks/useApp'
 import { getTransactions } from '../../redux/features/user'
 import type { Transaction } from '../../utils/user'
@@ -43,18 +47,18 @@ function TransactionCard({ tx }: { tx: Transaction }) {
     .join(' · ')
 
   return (
-    <TxCard>
-      <TxTop>
+    <ItemCard>
+      <ItemTop>
         <div>
-          <TxBranch>{formatDate(tx.createdAt || tx.importedAt)}</TxBranch>
-          <TxMeta>{meta || '—'}</TxMeta>
+          <ItemName>{formatDate(tx.createdAt || tx.importedAt)}</ItemName>
+          <ItemMeta>{meta || '—'}</ItemMeta>
         </div>
-        <TxAmount>{formatMoney(tx.totalAmount)}</TxAmount>
-      </TxTop>
-      <TxChips>
-        <TxChip>{branch}</TxChip>
-        {paymentMethod ? <TxChip>{paymentMethod}</TxChip> : null}
-      </TxChips>
+        <ItemAmount>{formatMoney(tx.totalAmount)}</ItemAmount>
+      </ItemTop>
+      <ItemChips>
+        <ItemChip>{branch}</ItemChip>
+        {paymentMethod ? <ItemChip>{paymentMethod}</ItemChip> : null}
+      </ItemChips>
       {items.length ? (
         <TxItems>
           {items.map((item, index) => (
@@ -62,22 +66,7 @@ function TransactionCard({ tx }: { tx: Transaction }) {
           ))}
         </TxItems>
       ) : null}
-    </TxCard>
-  )
-}
-
-function TransactionsSkeleton() {
-  return (
-    <Dashboard>
-      <Scroll aria-busy="true" aria-label="載入中">
-        <TxList>
-          <Skeleton $variant="wide" />
-          <Skeleton $variant="wide" />
-          <Skeleton $variant="wide" />
-        </TxList>
-      </Scroll>
-      <BottomNav />
-    </Dashboard>
+    </ItemCard>
   )
 }
 
@@ -90,82 +79,28 @@ export default function TransactionsPage() {
     void dispatch(getTransactions())
   }, [dispatch])
 
-  if (loading && !data) {
-    return <TransactionsSkeleton />
-  }
+  const pending = loading && !data
 
   return (
-    <Dashboard>
-      <Scroll>
-        <SectionTitle>交易紀錄</SectionTitle>
-
-        {transactions.length ? (
-          <TxList>
-            {transactions.map((tx) => (
-              <TransactionCard key={tx.id} tx={tx} />
-            ))}
-          </TxList>
-        ) : (
-          <TxEmpty>尚無交易紀錄</TxEmpty>
-        )}
-      </Scroll>
-
-      <BottomNav />
-    </Dashboard>
+    <PageLayout title="交易紀錄" nav busy={pending}>
+      {pending ? (
+        <ItemList>
+          <Skeleton $variant="wide" />
+          <Skeleton $variant="wide" />
+          <Skeleton $variant="wide" />
+        </ItemList>
+      ) : transactions.length ? (
+        <ItemList>
+          {transactions.map((tx) => (
+            <TransactionCard key={tx.id} tx={tx} />
+          ))}
+        </ItemList>
+      ) : (
+        <EmptyCard>尚無交易紀錄</EmptyCard>
+      )}
+    </PageLayout>
   )
 }
-
-const TxList = styled.div`
-  display: grid;
-  gap: 0.85rem;
-`
-
-const TxCard = styled(Card)`
-  padding: 1rem 1.1rem 1.05rem;
-`
-
-const TxTop = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-`
-
-const TxBranch = styled.p`
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-`
-
-const TxMeta = styled.p`
-  margin: 0.3rem 0 0;
-  color: var(--dash-muted);
-  font-size: 0.78rem;
-`
-
-const TxAmount = styled.p`
-  margin: 0;
-  flex: 0 0 auto;
-  font-size: 1.2rem;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-`
-
-const TxChips = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-top: 0.75rem;
-`
-
-const TxChip = styled.span`
-  padding: 0.28rem 0.6rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  color: #d1d1d6;
-  font-size: 0.72rem;
-`
 
 const TxItems = styled.ul`
   display: grid;
@@ -178,14 +113,4 @@ const TxItems = styled.ul`
 
 const TxItem = styled.li`
   font-size: 0.88rem;
-`
-
-const TxEmpty = styled(Card)`
-  display: grid;
-  place-items: center;
-  min-height: 11rem;
-  padding: 1.5rem 1.1rem;
-  color: var(--dash-muted);
-  font-size: 0.88rem;
-  text-align: center;
 `

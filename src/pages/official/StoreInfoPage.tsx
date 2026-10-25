@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { Card, Dashboard, Scroll, Skeleton } from '../../components/Dashboard'
-import OfficialHeader from '../../components/OfficialHeader'
+import { Card, EmptyCard, Skeleton } from '../../components/Dashboard'
+import PageLayout from '../../components/PageLayout'
 import { getStoresApi, type Store } from '../../utils/store'
 
 function storeQuery(store: Store) {
@@ -47,21 +47,18 @@ export default function StoreInfoPage() {
   }, [])
 
   return (
-    <Dashboard>
-      <PageScroll>
-        <OfficialHeader title="門市資訊" />
-
-        {stores === null ? (
-          <StoreList aria-busy="true" aria-label="載入門市">
-            <Skeleton $variant="wide" />
-            <Skeleton $variant="wide" />
-            <Skeleton $variant="wide" />
-          </StoreList>
-        ) : storesError ? (
-          <EmptyCard>{storesError}</EmptyCard>
-        ) : stores.length ? (
-          <StoreList>
-            {stores.map((store) => (
+    <PageLayout title="門市資訊" busy={stores === null}>
+      {stores === null ? (
+        <StoreList>
+          <Skeleton $variant="wide" />
+          <Skeleton $variant="wide" />
+          <Skeleton $variant="wide" />
+        </StoreList>
+      ) : storesError ? (
+        <EmptyCard>{storesError}</EmptyCard>
+      ) : stores.length ? (
+        <StoreList>
+          {stores.map((store) => (
             <InfoCard key={store.id}>
               <MapPreview
                 href={googleMapsUrl(store)}
@@ -118,31 +115,16 @@ export default function StoreInfoPage() {
             </InfoCard>
           ))}
         </StoreList>
-        ) : (
-          <EmptyCard>尚無門市資料</EmptyCard>
-        )}
-      </PageScroll>
-    </Dashboard>
+      ) : (
+        <EmptyCard>尚無門市資料</EmptyCard>
+      )}
+    </PageLayout>
   )
 }
-
-const PageScroll = styled(Scroll)`
-  padding-bottom: 2rem;
-`
 
 const StoreList = styled.div`
   display: grid;
   gap: 0.75rem;
-`
-
-const EmptyCard = styled(Card)`
-  display: grid;
-  place-items: center;
-  min-height: 11rem;
-  padding: 1.5rem 1.1rem;
-  color: var(--dash-muted);
-  font-size: 0.88rem;
-  text-align: center;
 `
 
 const InfoCard = styled(Card)`

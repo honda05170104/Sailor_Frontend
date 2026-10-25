@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 import styled from 'styled-components'
 
-import { Card, Dashboard, Scroll, Skeleton } from '../../components/Dashboard'
-import OfficialHeader from '../../components/OfficialHeader'
+import { Card, Skeleton } from '../../components/Dashboard'
+import PageLayout from '../../components/PageLayout'
 import { useAppDispatch, useAppSelector } from '../../customHooks/useApp'
 import { getVips } from '../../redux/features/user'
 
@@ -57,18 +57,6 @@ function LinkifiedText({ text }: { text: string }) {
   )
 }
 
-function VipSkeleton() {
-  return (
-    <Dashboard>
-      <PageScroll aria-busy="true" aria-label="載入中">
-        <Skeleton $variant="title" />
-        <Skeleton $variant="wide" />
-        <Skeleton $variant="wide" />
-      </PageScroll>
-    </Dashboard>
-  )
-}
-
 export default function VipPage() {
   const dispatch = useAppDispatch()
   const vipState = useAppSelector((state) => state.userReducer.getVips)
@@ -78,14 +66,16 @@ export default function VipPage() {
     void dispatch(getVips())
   }, [dispatch])
 
-  if (vipState.loading && !vipState.data) {
-    return <VipSkeleton />
-  }
+  const pending = vipState.loading && !vipState.data
 
   return (
-    <Dashboard>
-      <PageScroll>
-        <OfficialHeader title="會員權益" />
+    <PageLayout title="會員權益" busy={pending}>
+      {pending ? (
+        <>
+          <Skeleton $variant="wide" />
+          <Skeleton $variant="wide" />
+        </>
+      ) : (
         <InfoCard>
           {vipState.error ? <VipItemMeta>{vipState.error}</VipItemMeta> : null}
           <VipList>
@@ -124,14 +114,10 @@ export default function VipPage() {
             水手會員等級或資格累計辦法，本公司保有解釋及隨時變更、增加條文相關之權利，且不另行通知。
           </Disclaimer>
         </InfoCard>
-      </PageScroll>
-    </Dashboard>
+      )}
+    </PageLayout>
   )
 }
-
-const PageScroll = styled(Scroll)`
-  padding-bottom: 2rem;
-`
 
 const InfoCard = styled(Card)`
   padding: 1rem 1.1rem 1.05rem;

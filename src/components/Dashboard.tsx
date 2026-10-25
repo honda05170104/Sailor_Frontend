@@ -80,6 +80,16 @@ export const Card = styled.section`
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
 `
 
+export const EmptyCard = styled(Card)`
+  display: grid;
+  place-items: center;
+  min-height: 11rem;
+  padding: 1.5rem 1.1rem;
+  color: var(--dash-muted);
+  font-size: 0.88rem;
+  text-align: center;
+`
+
 export const Eyebrow = styled.p`
   margin: 0 0 0.25rem;
   color: var(--dash-muted);
