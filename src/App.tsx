@@ -12,6 +12,7 @@ import HomePage from './pages/member/HomePage'
 import LoginPage from './pages/member/LoginPage'
 import TransactionsPage from './pages/member/TransactionsPage'
 import StoreInfoPage from './pages/official/StoreInfoPage'
+import VeiledChameleonPage from './pages/official/VeiledChameleonPage'
 import VipPage from './pages/official/VipPage'
 import { getAuthToken } from './utils/auth'
 import { clearReturnToIfMatched, peekReturnTo } from './utils/returnTo'
@@ -48,6 +49,7 @@ export default function App() {
         {/* Official site: public, no login or LIFF. Keep in sync with OFFICIAL_PATHS. */}
         <Route path="/store" element={<StoreInfoPage />} />
         <Route path="/vip" element={<VipPage />} />
+        <Route path="/species/veiled-chameleon" element={<VeiledChameleonPage />} />
 
         <Route element={<RequireAuth />}>
           <Route path="/complete-profile" element={<CompleteProfilePage />} />
