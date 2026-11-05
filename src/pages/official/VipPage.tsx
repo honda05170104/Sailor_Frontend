@@ -91,6 +91,7 @@ export default function VipPage() {
               const descriptionKey = description ? normalizeVipText(description) : ''
               const rules = (vip.rules ?? []).map((rule) => rule.trim()).filter(Boolean)
               const ruleKeys = new Set(rules.map((rule) => normalizeVipText(rule)))
+              const entryRule = rules.find((rule) => ruleKind(rule) === '升等')
               const benefits = (vip.benefits ?? []).filter((benefit) => {
                 const key = normalizeVipText(benefit)
                 if (!key || key === descriptionKey || ruleKeys.has(key)) return false
@@ -100,6 +101,12 @@ export default function VipPage() {
               return (
                 <VipItem key={vip.id}>
                   <VipItemName>{vip.name}</VipItemName>
+                  {entryRule ? (
+                    <EntryLine>
+                      <EntryTag>入會門檻</EntryTag>
+                      <span>{entryRule.replace(/升等$/, '').trim()}</span>
+                    </EntryLine>
+                  ) : null}
                   {benefits.length ? (
                     <BenefitList>
                       {benefits.map((benefit, index) => (
@@ -126,7 +133,9 @@ export default function VipPage() {
             </RenewTitle>
             <RenewRows>
               {vips.map((vip) => {
-                const rules = (vip.rules ?? []).map((rule) => rule.trim()).filter(Boolean)
+                const rules = (vip.rules ?? [])
+                  .map((rule) => rule.trim())
+                  .filter((rule) => rule && ruleKind(rule) !== '升等')
                 const nextPaid = vips.find((item) => (item.rank ?? 0) > (vip.rank ?? 0) && (item.minSpend ?? 0) > 0)
                 const stayText =
                   nextPaid && (nextPaid.minSpend ?? 0) > 0
@@ -175,6 +184,22 @@ const VipItem = styled.article`
   border-radius: 1rem;
   background: rgba(255, 255, 255, 0.04);
   border-left: 3px solid var(--color-glass-border);
+`
+
+const EntryLine = styled.p`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.35rem 0 0;
+  color: var(--dash-muted);
+  font-size: 0.86rem;
+  line-height: 1.4;
+`
+
+const EntryTag = styled.span`
+  flex: 0 0 auto;
+  color: var(--color-white);
+  font-weight: 700;
 `
 
 const VipItemName = styled.p`
