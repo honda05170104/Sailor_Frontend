@@ -11,6 +11,8 @@ export type VipTier = {
   pointsRate?: number
   discountPercent: number
   description?: string
+  /** Upgrade, retain, and downgrade lines. Separate from perks. */
+  rules?: string[]
   benefits?: string[]
   createdAt?: string
   updatedAt?: string

@@ -82,14 +82,26 @@ export default function VipPage() {
             {vips.map((vip) => {
               const description = vip.description?.trim()
               const descriptionKey = description ? normalizeVipText(description) : ''
-              const benefits = (vip.benefits ?? []).filter(
-                (benefit) => normalizeVipText(benefit) !== descriptionKey,
-              )
+              const rules = (vip.rules ?? []).map((rule) => rule.trim()).filter(Boolean)
+              const ruleKeys = new Set(rules.map((rule) => normalizeVipText(rule)))
+              const benefits = (vip.benefits ?? []).filter((benefit) => {
+                const key = normalizeVipText(benefit)
+                if (!key || key === descriptionKey || ruleKeys.has(key)) return false
+                return true
+              })
 
               return (
                 <VipItem key={vip.id}>
                   <VipItemName>{vip.name}</VipItemName>
-                  {description ? (
+                  {rules.length ? (
+                    <RuleList>
+                      {rules.map((rule) => (
+                        <li key={rule}>
+                          <LinkifiedText text={rule} />
+                        </li>
+                      ))}
+                    </RuleList>
+                  ) : description ? (
                     <VipItemMeta>
                       <LinkifiedText text={description} />
                     </VipItemMeta>
@@ -144,6 +156,17 @@ const VipItemName = styled.p`
 
 const VipItemMeta = styled.p`
   margin: 0.35rem 0 0;
+  color: var(--dash-muted);
+  font-size: 0.86rem;
+  line-height: 1.4;
+`
+
+const RuleList = styled.ul`
+  display: grid;
+  gap: 0.2rem;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  list-style: none;
   color: var(--dash-muted);
   font-size: 0.86rem;
   line-height: 1.4;
