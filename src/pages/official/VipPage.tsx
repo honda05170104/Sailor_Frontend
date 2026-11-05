@@ -85,6 +85,40 @@ export default function VipPage() {
       ) : (
         <InfoCard>
           {vipState.error ? <VipItemMeta>{vipState.error}</VipItemMeta> : null}
+          <VipList>
+            {vips.map((vip) => {
+              const description = vip.description?.trim()
+              const descriptionKey = description ? normalizeVipText(description) : ''
+              const rules = (vip.rules ?? []).map((rule) => rule.trim()).filter(Boolean)
+              const ruleKeys = new Set(rules.map((rule) => normalizeVipText(rule)))
+              const benefits = (vip.benefits ?? []).filter((benefit) => {
+                const key = normalizeVipText(benefit)
+                if (!key || key === descriptionKey || ruleKeys.has(key)) return false
+                return true
+              })
+
+              return (
+                <VipItem key={vip.id}>
+                  <VipItemName>{vip.name}</VipItemName>
+                  {benefits.length ? (
+                    <BenefitList>
+                      {benefits.map((benefit, index) => (
+                        <li key={benefit}>
+                          <BenefitIndex>{index + 1}.</BenefitIndex>
+                          <span>
+                            <LinkifiedText text={benefit} />
+                          </span>
+                        </li>
+                      ))}
+                    </BenefitList>
+                  ) : null}
+                </VipItem>
+              )
+            })}
+          </VipList>
+          <Disclaimer>
+            水手會員等級或資格累計辦法，本公司保有解釋及隨時變更、增加條文相關之權利，且不另行通知。
+          </Disclaimer>
           <RenewCard>
             <RenewTitle>
               <span>升等／降等</span>
@@ -121,40 +155,6 @@ export default function VipPage() {
               })}
             </RenewRows>
           </RenewCard>
-          <VipList>
-            {vips.map((vip) => {
-              const description = vip.description?.trim()
-              const descriptionKey = description ? normalizeVipText(description) : ''
-              const rules = (vip.rules ?? []).map((rule) => rule.trim()).filter(Boolean)
-              const ruleKeys = new Set(rules.map((rule) => normalizeVipText(rule)))
-              const benefits = (vip.benefits ?? []).filter((benefit) => {
-                const key = normalizeVipText(benefit)
-                if (!key || key === descriptionKey || ruleKeys.has(key)) return false
-                return true
-              })
-
-              return (
-                <VipItem key={vip.id}>
-                  <VipItemName>{vip.name}</VipItemName>
-                  {benefits.length ? (
-                    <BenefitList>
-                      {benefits.map((benefit, index) => (
-                        <li key={benefit}>
-                          <BenefitIndex>{index + 1}.</BenefitIndex>
-                          <span>
-                            <LinkifiedText text={benefit} />
-                          </span>
-                        </li>
-                      ))}
-                    </BenefitList>
-                  ) : null}
-                </VipItem>
-              )
-            })}
-          </VipList>
-          <Disclaimer>
-            水手會員等級或資格累計辦法，本公司保有解釋及隨時變更、增加條文相關之權利，且不另行通知。
-          </Disclaimer>
         </InfoCard>
       )}
     </PageLayout>
@@ -195,7 +195,7 @@ const RenewCard = styled.section`
   display: grid;
   grid-template-columns: 5.5rem 1fr;
   gap: 0.85rem;
-  margin-bottom: 0.85rem;
+  margin-top: 0.85rem;
   padding: 0.95rem 0.9rem;
   border-radius: 1rem;
   background: rgba(255, 255, 255, 0.04);
