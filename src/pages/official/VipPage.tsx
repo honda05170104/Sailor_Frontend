@@ -45,6 +45,13 @@ function linkParts(text: string) {
   return parts
 }
 
+function ruleKind(rule: string) {
+  if (rule.includes('升等')) return '升等'
+  if (rule.includes('保留')) return '續會'
+  if (rule.includes('改為') || rule.includes('退回')) return '降等'
+  return ''
+}
+
 function LinkifiedText({ text }: { text: string }) {
   return linkParts(text).map((part, index) =>
     part.href ? (
@@ -78,6 +85,42 @@ export default function VipPage() {
       ) : (
         <InfoCard>
           {vipState.error ? <VipItemMeta>{vipState.error}</VipItemMeta> : null}
+          <RenewCard>
+            <RenewTitle>
+              <span>升等／降等</span>
+              <span>續會方式</span>
+            </RenewTitle>
+            <RenewRows>
+              {vips.map((vip) => {
+                const rules = (vip.rules ?? []).map((rule) => rule.trim()).filter(Boolean)
+                const nextPaid = vips.find((item) => (item.rank ?? 0) > (vip.rank ?? 0) && (item.minSpend ?? 0) > 0)
+                const stayText =
+                  nextPaid && (nextPaid.minSpend ?? 0) > 0
+                    ? `近一年累積消費未滿 ${nextPaid.minSpend.toLocaleString('zh-TW')} 元，維持${vip.name}，沒有會籍到期日。`
+                    : `${vip.name}沒有會籍到期日。`
+
+                return (
+                  <RenewRow key={vip.id}>
+                    <TierPill $slug={vip.slug || ''}>{vip.name}</TierPill>
+                    <RenewCopy>
+                      {rules.length ? (
+                        rules.map((rule) => (
+                          <RenewLine key={rule}>
+                            {ruleKind(rule) ? <RenewTag>{ruleKind(rule)}</RenewTag> : null}
+                            <span>{rule}</span>
+                          </RenewLine>
+                        ))
+                      ) : (
+                        <RenewLine>
+                          <span>{stayText}</span>
+                        </RenewLine>
+                      )}
+                    </RenewCopy>
+                  </RenewRow>
+                )
+              })}
+            </RenewRows>
+          </RenewCard>
           <VipList>
             {vips.map((vip) => {
               const description = vip.description?.trim()
@@ -93,19 +136,6 @@ export default function VipPage() {
               return (
                 <VipItem key={vip.id}>
                   <VipItemName>{vip.name}</VipItemName>
-                  {rules.length ? (
-                    <RuleList>
-                      {rules.map((rule) => (
-                        <li key={rule}>
-                          <LinkifiedText text={rule} />
-                        </li>
-                      ))}
-                    </RuleList>
-                  ) : description ? (
-                    <VipItemMeta>
-                      <LinkifiedText text={description} />
-                    </VipItemMeta>
-                  ) : null}
                   {benefits.length ? (
                     <BenefitList>
                       {benefits.map((benefit, index) => (
@@ -161,15 +191,80 @@ const VipItemMeta = styled.p`
   line-height: 1.4;
 `
 
-const RuleList = styled.ul`
+const RenewCard = styled.section`
   display: grid;
-  gap: 0.2rem;
-  margin: 0.4rem 0 0;
-  padding: 0;
-  list-style: none;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 0.85rem;
+  margin-bottom: 0.85rem;
+  padding: 0.95rem 0.9rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-glass-border);
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+`
+
+const RenewTitle = styled.h3`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.15rem;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1.35;
+`
+
+const RenewRows = styled.div`
+  display: grid;
+  gap: 0.75rem;
+`
+
+const RenewRow = styled.div`
+  display: grid;
+  grid-template-columns: 4.6rem 1fr;
+  gap: 0.65rem;
+  align-items: start;
+`
+
+const TierPill = styled.span<{ $slug: string }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.7rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: ${({ $slug }) =>
+    $slug === 'black' ? '#2a2a2a' : $slug === 'gold' ? '#e7d7b1' : '#d7e7b8'};
+  color: ${({ $slug }) => ($slug === 'black' ? '#f5f5f5' : '#2c311c')};
+  border: ${({ $slug }) => ($slug === 'black' ? '1px solid rgba(255, 255, 255, 0.16)' : '0')};
+`
+
+const RenewCopy = styled.div`
+  display: grid;
+  gap: 0.35rem;
+`
+
+const RenewLine = styled.p`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0;
   color: var(--dash-muted);
-  font-size: 0.86rem;
-  line-height: 1.4;
+  font-size: 0.84rem;
+  line-height: 1.45;
+`
+
+const RenewTag = styled.span`
+  flex: 0 0 auto;
+  color: var(--color-white);
+  font-weight: 700;
 `
 
 const BenefitList = styled.ol`
