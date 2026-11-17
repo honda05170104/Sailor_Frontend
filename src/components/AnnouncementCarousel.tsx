@@ -10,8 +10,8 @@ type Announcement = {
 
 const ANNOUNCEMENTS: Announcement[] = [
   {
-    src: '/announcement/announcement-member-launch.jpg',
-    alt: '水手會員系統 10/15 正式上線，註冊即享 50 元折價券，舊會員直升金卡',
+    src: '/announcement/announcement-member-launch-black.jpg',
+    alt: '水手會員系統 10/15 正式上線，註冊即享 50 元折價券，舊會員直升黑卡',
     modal: true,
   },
   {
