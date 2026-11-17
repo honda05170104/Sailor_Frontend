@@ -94,22 +94,22 @@ export default function AnnouncementModal({ onClose }: AnnouncementModalProps) {
         
         <Content>
           <Title id="announcement-title">
-            水手會員系統將於 10/15 正式上線！
+            水手會員系統 10/15 正式上線！
           </Title>
 
           <Section>
-            <SectionTitle>1. 新會員可獲得 20 元折價券</SectionTitle>
-            <Method>來店向門市人員索取，即可獲得一張 20 元折價券。</Method>
+            <SectionTitle>1. 註冊即享 50 元折價券</SectionTitle>
+            <Method>註冊成為會員時自動發放 50 元折價券。</Method>
           </Section>
 
           <Section>
-            <SectionTitle>2. 舊會員註冊即享 100 元折價券</SectionTitle>
+            <SectionTitle>2. 舊會員直升金卡</SectionTitle>
             <StepList>
               <Step>
                 於本 LINE 帳號回覆您的「手機號碼」＋已完成註冊
                 <Example>範例：0912345678 已完成註冊</Example>
               </Step>
-              <Step>等候客服核對資料，即可獲得 100 元折價券！</Step>
+              <Step>等候客服核對資料，即可直升金卡！</Step>
             </StepList>
           </Section>
 

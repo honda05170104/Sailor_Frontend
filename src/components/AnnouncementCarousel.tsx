@@ -10,13 +10,9 @@ type Announcement = {
 
 const ANNOUNCEMENTS: Announcement[] = [
   {
-    src: '/announcement/announcement-coupon-100.jpg',
-    alt: '水手會員系統 10/15 正式上線，舊會員註冊即享 100 元折價券',
+    src: '/announcement/announcement-member-launch.jpg',
+    alt: '水手會員系統 10/15 正式上線，註冊即享 50 元折價券，舊會員直升金卡',
     modal: true,
-  },
-  {
-    src: '/announcement/HzEsBdxwGtj7.jpg',
-    alt: '2026 桃園寵物用品展秋季，10/23–26 桃園會展中心',
   },
   {
     src: '/announcement/89HbwEQEWxZQ.jpg',
