@@ -24,6 +24,8 @@ const MIME = {
   '.woff': 'font/woff',
   '.woff2': 'font/woff2',
   '.map': 'application/json; charset=utf-8',
+  '.txt': 'text/plain; charset=utf-8',
+  '.xml': 'application/xml; charset=utf-8',
 }
 
 function safeJoin(root, requestPath) {
@@ -34,19 +36,17 @@ function safeJoin(root, requestPath) {
   return resolved
 }
 
-async function sendFile(req, res, filePath, requestPath) {
-  const data = await readFile(filePath)
-  const ext = path.extname(filePath).toLowerCase()
-  const type = MIME[ext] || 'application/octet-stream'
+function sendBytes(req, res, data, contentType, requestPath) {
   const isHashedAsset = requestPath.startsWith('/assets/')
+  const isHtml = contentType.startsWith('text/html')
   const cacheControl = isHashedAsset
     ? 'public, max-age=31536000, immutable'
-    : ext === '.html'
+    : isHtml
       ? 'public, max-age=60'
       : 'public, max-age=3600'
 
   const headers = {
-    'Content-Type': type,
+    'Content-Type': contentType,
     'Cache-Control': cacheControl,
   }
 
@@ -54,10 +54,10 @@ async function sendFile(req, res, filePath, requestPath) {
   if (
     typeof accept === 'string' &&
     accept.includes('gzip') &&
-    (type.startsWith('text/') ||
-      type.includes('javascript') ||
-      type.includes('json') ||
-      type.includes('svg'))
+    (contentType.startsWith('text/') ||
+      contentType.includes('javascript') ||
+      contentType.includes('json') ||
+      contentType.includes('svg'))
   ) {
     const gzipped = gzipSync(data)
     headers['Content-Encoding'] = 'gzip'
@@ -71,6 +71,13 @@ async function sendFile(req, res, filePath, requestPath) {
   headers['Content-Length'] = data.length
   res.writeHead(200, headers)
   res.end(data)
+}
+
+async function sendFile(req, res, filePath, requestPath) {
+  const data = await readFile(filePath)
+  const ext = path.extname(filePath).toLowerCase()
+  const type = MIME[ext] || 'application/octet-stream'
+  sendBytes(req, res, data, type, requestPath)
 }
 
 const server = createServer(async (req, res) => {

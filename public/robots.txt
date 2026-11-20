@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sailorreptile.com/sitemap.xml
